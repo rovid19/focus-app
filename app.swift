@@ -12,6 +12,7 @@ struct focus_appApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appCoordinator: AppCoordinator
     @StateObject private var supabaseAuth = SupabaseAuth.shared
+    @StateObject private var hardModeManager = HardModeManager.shared
 
     init() {
         let homeController = HomeController()
@@ -25,6 +26,7 @@ struct focus_appApp: App {
             RootView()
                 .environmentObject(appCoordinator)
                 .environmentObject(supabaseAuth)
+                .environmentObject(hardModeManager)
         }
         .menuBarExtraStyle(.window)
     }

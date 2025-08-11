@@ -3,6 +3,8 @@ import Combine
 import SwiftUI
 
 class HomeController: ObservableObject {
+    @Published var whichView: String = "focus"
+    
     // Home View
     var homeView: HomeView {
         HomeView(controller: self)
@@ -14,7 +16,11 @@ class HomeController: ObservableObject {
         FocusView(controller: focusController)
     }
 
-
+    // Stats View
+    var statsController = StatsController()
+    var statsView: StatsView {
+        StatsView(controller: statsController)
+    }
 
     init() {
         checkAuth()
@@ -46,5 +52,9 @@ class HomeController: ObservableObject {
         Task {
             try await SupabaseAuth.shared.logout()
         }
+    }
+
+    func switchView(to view: String) {
+        whichView = view
     }
 }
