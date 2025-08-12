@@ -72,7 +72,10 @@ struct FocusView: View {
             if !(hardModeManager.isHardMode && controller.isTimerRunning) {
                 Button(action: {
                     if !controller.isTimerRunning {
-                        controller.startTimer()
+                        Task {
+                            await controller.startTimer()
+                        }
+                       
                     } else {
                         controller.stopTimer()
                     }

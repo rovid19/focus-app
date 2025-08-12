@@ -12,7 +12,7 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 20) {
             if supabaseAuth.user != nil {
                 // Top Menu Bar
                 HStack(spacing: 0) {
@@ -46,58 +46,56 @@ struct HomeView: View {
                     .padding(.vertical, 15)
                 }
                 .frame(maxWidth: .infinity)
-                 .background(Color(NSColor.controlBackgroundColor))
-                 .cornerRadius(12)
-                .padding( 20)
-
-               
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(12)
             }
-            VStack(spacing: 20) {
+            Group {
+                // Timer Section
                 if supabaseAuth.user != nil {
-                    // Timer Section
                     if controller.whichView == "focus" {
                         controller.focusView
                     } else if controller.whichView == "stats" {
                         controller.statsView
                     }
-
-                    // Action Buttons
-                    HStack(spacing: 15) {
-                        Button("Settings") {
-                            // Settings action
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Button("Logout") {
-                            controller.logout()
-                            print("Logged out")
-                        }
-                        .buttonStyle(.bordered)
-                        .foregroundColor(.red)
-                    }
-
-                } else {
-                    VStack(spacing: 20) {
-                        Image(systemName: "brain.head.profile")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
-
-                        Text("Welcome to Focus App")
-                            .font(.title2)
-                            .fontWeight(.medium)
-
-                        Button("Sign in with Google") {
-                            controller.signIn()
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
                 }
             }
-            .padding()
-            .frame(minWidth: 300, minHeight: 400)
+            if supabaseAuth.user != nil {
+                // Action Buttons
+                HStack(spacing: 15) {
+                    Button("Settings") {
+                        // Settings action
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button("Logout") {
+                        controller.logout()
+                        print("Logged out")
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.red)
+                }
+
+                .frame(maxWidth: .infinity)
+                .padding(20)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(12)
+            } else {
+                // login page
+                VStack(spacing: 20) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+
+                    Text("Welcome to Focus App")
+                        .font(.title2)
+                        .fontWeight(.medium)
+
+                    Button("Sign in with Google") {
+                        controller.signIn()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
         }
     }
 }
-
-
-

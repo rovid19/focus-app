@@ -13,7 +13,7 @@ struct focus_appApp: App {
     @StateObject private var appCoordinator: AppCoordinator
     @StateObject private var supabaseAuth = SupabaseAuth.shared
     @StateObject private var hardModeManager = HardModeManager.shared
-
+    @StateObject private var statisticsManager = StatisticsManager.shared
     init() {
         let homeController = HomeController()
         _appCoordinator = StateObject(
@@ -27,6 +27,7 @@ struct focus_appApp: App {
                 .environmentObject(appCoordinator)
                 .environmentObject(supabaseAuth)
                 .environmentObject(hardModeManager)
+                .environmentObject(statisticsManager)
         }
         .menuBarExtraStyle(.window)
     }

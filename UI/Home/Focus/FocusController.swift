@@ -2,6 +2,7 @@ import SwiftUI
 
 class FocusController: ObservableObject {
     @EnvironmentObject var hardModeManager: HardModeManager
+    private(set) var initialTimerMinutes: Int = 25
     @Published var timerMinutes: Int = 25
     @Published var isTimerRunning: Bool = false
     private var timer: Timer?
@@ -12,21 +13,25 @@ class FocusController: ObservableObject {
 
     func decreaseBy5() {
         timerMinutes = max(5, timerMinutes - 5)
+        initialTimerMinutes = max(5, initialTimerMinutes - 5)
     }
 
     func decreaseBy15() {
-        timerMinutes = max(5, timerMinutes - 15)
-    }
+        timerMinutes = max(5, timerMinutes - 15)    
+        initialTimerMinutes = max(5, initialTimerMinutes - 15)
+    }   
 
     func increaseBy5() {
         timerMinutes += 5
+        initialTimerMinutes += 5
     }
 
     func increaseBy15() {
         timerMinutes += 15
+        initialTimerMinutes += 15
     }
 
-    func startTimer() {
+    func startTimer() async {
         guard !isTimerRunning else { return }
         isTimerRunning = true
 
@@ -41,9 +46,15 @@ class FocusController: ObservableObject {
                 t.invalidate()
                 self.isTimerRunning = false
                 NSSound(named: "Glass")?.play()
+                Task {
+                    await StatisticsManager.shared.addStat(title: "Focus", time_elapsed: self.initialTimerMinutes * 60)
+                }
+              
             }
         }
     }
+    
+    
 
     func stopTimer() {
         isTimerRunning = false

@@ -48,10 +48,17 @@ final class SupabaseAuth: ObservableObject {
         return session.user
     }
 
-    func isUserSignedIn() async -> Bool {
+ func isUserSignedIn() async -> Bool {
         do {
             let session = try await client.auth.session
-            return session != nil
+                user = session.user
+            if let uid = user?.id {
+                StatisticsManager.shared.updateUserId(userId:uid)
+            }
+
+                return true
+          
+      
         } catch {
             return false
         }
@@ -61,6 +68,7 @@ final class SupabaseAuth: ObservableObject {
     do {
         try await client.auth.signOut()
         user = nil
+        StatisticsManager.shared.updateUserId(userId: nil)
         print("Successfully signed out")
     } catch {
         print("Logout failed:", error)
