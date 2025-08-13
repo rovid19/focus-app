@@ -1,10 +1,3 @@
-//
-//  HomeView.swift
-//  focus-app
-//
-//  Created by Roberto Vidovic on 10.08.2025..
-//
-
 import SwiftUI
 
 struct HomeView: View {
@@ -12,90 +5,277 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             if supabaseAuth.user != nil {
-                // Top Menu Bar
+                // TOP
+                topBar
+                    .padding(.horizontal, 12)
+                 
+                    .opacity(controller.isTimerRunning ? 0 : 1)
+                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .bottom) // collapse bottom→top
+                    .clipped()
+                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
+
+                // MIDDLE
+                contentArea
+                    //.padding(.horizontal, 12)
+                    .frame(maxHeight: .infinity)
+                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
+
+                // BOTTOM
+                bottomBar
+                    .padding(.horizontal, 12)
+                 
+                    .opacity(controller.isTimerRunning ? 0 : 1)
+                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .bottom) // collapse bottom→top
+                    .clipped()
+                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
+            } else {
+                loginView
+            }
+            
+        }
+        .frame(width: 460, height: 440)
+        .background(Color.white.opacity(0.1))
+        // .shadow(color: .black.opacity(0.7), radius: 50, x: 0, y: 10)
+    }
+}
+
+// MARK: - Pieces
+
+private extension HomeView {
+    // Top bar with tabs
+    var topBar: some View {
+        VStack(spacing: 0) {
+            VStack {
+                HStack(spacing: 0) {
+                    tabButton(
+                        title: "Focus",
+                        systemImage: "target",
+                        isActive: controller.whichView == "focus"
+                    ) {
+                        controller.switchView(to: "focus")
+                    }
+                    Spacer()
+                    tabButton(
+                        title: "Blocker",
+                        systemImage: "shield",
+                        isActive: controller.whichView == "blocker"
+                    ) {
+                        controller.switchView(to: "blocker")
+                    }
+
+                    Spacer()
+                    tabButton(
+                        title: "Statistics",
+                        systemImage: "chart.bar",
+                        isActive: controller.whichView == "stats"
+                    ) {
+                        controller.switchView(to: "stats")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 12)
+            }
+            .background(cardBackground)
+            .padding(.top, 12)
+
+            // Border
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+                .padding(.top, 12)
+        }
+    }
+
+    // Bottom bar with actions
+    var bottomBar: some View {
+        VStack(spacing: 0) {
+            // Border
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+                .padding(.bottom, 12)
+
+            VStack(spacing: 0) {
                 HStack(spacing: 0) {
                     Button(action: {
-                        controller.switchView(to: "focus")
-                    }) {
-                        Text("Focus")
-                            .font(.headline)
-                            .fontWeight(.medium)
-                            .foregroundColor(controller.whichView == "focus" ? .white : .primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(controller.whichView == "focus" ? Color.blue : Color.clear)
-                            .cornerRadius(8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Button(action: {
-                        controller.switchView(to: "stats")
-                    }) {
-                        Text("Statistics")
-                            .font(.headline)
-                            .fontWeight(.medium)
-                            .foregroundColor(controller.whichView == "stats" ? .white : .primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(controller.whichView == "stats" ? Color.blue : .clear)
-                            .cornerRadius(8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.vertical, 15)
-                }
-                .frame(maxWidth: .infinity)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(12)
-            }
-            Group {
-                // Timer Section
-                if supabaseAuth.user != nil {
-                    if controller.whichView == "focus" {
-                        controller.focusView
-                    } else if controller.whichView == "stats" {
-                        controller.statsView
-                    }
-                }
-            }
-            if supabaseAuth.user != nil {
-                // Action Buttons
-                HStack(spacing: 15) {
-                    Button("Settings") {
-                        // Settings action
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    Button("Logout") {
                         controller.logout()
                         print("Logged out")
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "power")
+                                .font(.system(size: 16))
+                                .foregroundColor(.white.opacity(0.7))
+                            Text("Logout")
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.red)
+                    .buttonStyle(GlassButtonStyle())
+
+                    Spacer()
+
+                    Button(action: {
+                        controller.openSettings()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "gear")
+                                .font(.system(size: 16))
+                                .foregroundColor(.white.opacity(0.7))
+                            Text("Settings")
+                        }
+                    }
+                    .buttonStyle(GlassButtonStyle())
                 }
 
-                .frame(maxWidth: .infinity)
-                .padding(20)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(12)
-            } else {
-                // login page
-                VStack(spacing: 20) {
-                    Image(systemName: "brain.head.profile")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 12)
+            }
+            .background(cardBackground)
+            .padding(.bottom, 12)
+        }
+    }
 
-                    Text("Welcome to Focus App")
-                        .font(.title2)
-                        .fontWeight(.medium)
+    // Login screen
+    var loginView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "brain.head.profile")
+                .font(.system(size: 60))
+                .foregroundColor(.blue)
 
-                    Button("Sign in with Google") {
-                        controller.signIn()
-                    }
-                    .buttonStyle(.borderedProminent)
+            Text("Welcome to Focus App")
+                .font(.title2)
+                .fontWeight(.medium)
+
+            Button("Sign in with Google") {
+                controller.signIn()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+
+    // Switch between Focus / Stats (type-erased to avoid compiler blow-up)
+    var contentArea: AnyView {
+        if controller.whichView == "focus" {
+            return AnyView(controller.focusView)
+        } else if controller.whichView == "stats" {
+            return AnyView(controller.statsView)
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+
+    // Reusable glass card background
+    var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.white.opacity(0.05))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
+    }
+
+    // Whole-view glass background
+    var glassBackground: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(Color.white.opacity(0.1))
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+            )
+    }
+
+    // One tab button
+    // One tab button
+    func tabButton(title: String, systemImage: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 16))
+                    .foregroundColor(isActive ? .white : .white.opacity(0.8))
+
+                Text(title)
+                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .tracking(-0.5)
+                    .foregroundColor(isActive ? .white : .white.opacity(0.6))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isActive ? Color.white.opacity(0.1) : Color.clear)
+            .cornerRadius(8)
+        }
+        .buttonStyle(TabButtonStyle(isActive: isActive)) // ← Change this line
+    }
+}
+
+// MARK: - Styles
+
+struct GlassButtonStyle: ButtonStyle {
+    @State private var isHovered = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isHovered ? Color.white.opacity(0.1) : Color.white.opacity(0.05))
+                    .animation(.easeInOut(duration: 0.2), value: isHovered)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .opacity(isHovered ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.2), value: isHovered)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
+            .onHover { hovering in
+                isHovered = hovering
+                if hovering {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
                 }
             }
-        }
+    }
+}
+
+// MARK: - Styles
+
+struct TabButtonStyle: ButtonStyle {
+    let isActive: Bool
+    @State private var isHovered = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isHovered ? Color.white.opacity(0.1) : Color.clear)
+                    .animation(.easeInOut(duration: 0.2), value: isHovered)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .opacity(isHovered ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.2), value: isHovered)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+            .onHover { hovering in
+                isHovered = hovering
+                if hovering {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
+                }
+            }
     }
 }

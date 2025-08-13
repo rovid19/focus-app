@@ -4,7 +4,7 @@ import Supabase
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         // Mock HomeController
-        let mockController = HomeController()
+        let mockController = HomeController(router: Router())
         mockController.switchView(to: "focus")
 
         // Mock SupabaseAuth with fake user

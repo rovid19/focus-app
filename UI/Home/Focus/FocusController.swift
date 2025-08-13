@@ -6,8 +6,10 @@ class FocusController: ObservableObject {
     @Published var timerMinutes: Int = 25
     @Published var isTimerRunning: Bool = false
     private var timer: Timer?
+    private var homeController: HomeController
 
-    init() {
+    init(homeController: HomeController) {
+        self.homeController = homeController
         print("FocusController initialized")
     }
 
@@ -33,6 +35,7 @@ class FocusController: ObservableObject {
 
     func startTimer() async {
         guard !isTimerRunning else { return }
+        homeController.isTimerRunning = true
         isTimerRunning = true
 
         var remainingSeconds = timerMinutes
@@ -45,6 +48,7 @@ class FocusController: ObservableObject {
             if remainingSeconds <= 0 {
                 t.invalidate()
                 self.isTimerRunning = false
+                self.homeController.isTimerRunning = false
                 NSSound(named: "Glass")?.play()
                 Task {
                     await StatisticsManager.shared.addStat(title: "Focus", time_elapsed: self.initialTimerMinutes * 60)
@@ -58,6 +62,7 @@ class FocusController: ObservableObject {
 
     func stopTimer() {
         isTimerRunning = false
+        homeController.isTimerRunning = false
         timer?.invalidate()
         timer = nil
     }

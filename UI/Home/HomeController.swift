@@ -4,14 +4,21 @@ import SwiftUI
 
 class HomeController: ObservableObject {
     @Published var whichView: String = "focus"
-    
+    @Published var isTimerRunning: Bool = false
+    @ObservedObject var router: Router
+
+    init(router: Router) {
+        self.router = router
+        checkAuth()
+    }
+
     // Home View
     var homeView: HomeView {
         HomeView(controller: self)
     }
 
     // Focus View
-    var focusController = FocusController()
+   lazy var focusController = FocusController(homeController: self)
     var focusView: FocusView {
         FocusView(controller: focusController)
     }
@@ -22,8 +29,10 @@ class HomeController: ObservableObject {
         StatsView(controller: statsController)
     }
 
-    init() {
-        checkAuth()
+    // Blocker View
+    var blockerController = BlockerController()
+    var blockerView: BlockerView {
+        BlockerView(controller: blockerController)
     }
 
     func checkAuth() {
@@ -56,5 +65,9 @@ class HomeController: ObservableObject {
 
     func switchView(to view: String) {
         whichView = view
+    }
+
+    func openSettings() {
+        router.changeView(view: .settings)
     }
 }
