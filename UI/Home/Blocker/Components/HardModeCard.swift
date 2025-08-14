@@ -1,35 +1,30 @@
 import SwiftUI
 
-struct HardModeToggle: View {
-    @EnvironmentObject var hardModeManager: HardModeManager
-    @ObservedObject var controller: FocusController
+struct HardModeCard: View {
+    @ObservedObject var controller: BlockerController
 
     var body: some View {
         HStack(spacing: 12) {
             HStack(spacing: 12) {
-                Image(systemName: "exclamationmark.shield")
+                Image(systemName: "shield")
                     .font(.system(size: 16))
                     .foregroundColor(.white.opacity(0.7))
-
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Hard Mode")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
-
-                    Text("When enabled, you cannot change time while the timer is running.")
+                    Text("When enabled, you cannot turn it off or change time while a session is running.")
                         .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.6))
-                        .lineLimit(2)
                 }
             }
-
             Spacer()
-
             Toggle("", isOn: Binding(
-                get: { hardModeManager.isHardMode },
-                set: { _ in hardModeManager.toggleHardMode() }
+                get: { controller.hardMode },
+                set: { _ in controller.toggleHardMode() }
             ))
-            .toggleStyle(CustomToggleStyle())
+            .toggleStyle(SwitchToggleStyle())
+            .disabled(controller.hardLocked)
+            .opacity(controller.hardLocked ? 0.6 : 1)
         }
         .padding(12)
         .background(
@@ -40,9 +35,5 @@ struct HardModeToggle: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
         )
-        .opacity(controller.isTimerRunning ? 0 : 1)
-        .offset(y: controller.isTimerRunning ? 50 : 0) // slide downward
-        .clipped()
-        .animation(.easeInOut(duration: 0.3), value: controller.isTimerRunning)
     }
 }

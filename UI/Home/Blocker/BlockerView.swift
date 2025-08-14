@@ -5,9 +5,16 @@ struct BlockerView: View {
 
     init(controller: BlockerController) {
         self.controller = controller
+        print("BlockerView init")
     }
 
     var body: some View {
-        Text("Blocker")
+        VStack(spacing: 12) {
+            BlockerCard(controller: controller)
+            HardModeCard(controller: controller)
+            ProfilesCard(controller: controller)
+        }
     }
+
+
 }

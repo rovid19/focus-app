@@ -38,7 +38,6 @@ struct focus_appApp: App {
         // Settings window exists, but we only open it when needed
         WindowGroup("Settings", id: "settings") {
             SettingsView(controller: SettingsController())
-                .environmentObject(supabaseAuth)
                 .environmentObject(router)
                 .onDisappear {
                     router.changeView(view: .home)
@@ -52,23 +51,3 @@ struct focus_appApp: App {
     }
 }
 
-// Opens/closes the Settings window when Router changes
-struct WindowCoordinator: View {
-    @ObservedObject var router: Router
-    @Environment(\.openWindow) private var openWindow
-
-    var body: some View {
-        // invisible helper
-        Color.clear
-            .onChange(of: router.currentView) { _, newValue in
-                if newValue == .settings {
-                    openWindow(id: "settings")
-                } else {
-                    // close any open "settings" windows
-                    NSApp.windows
-                        .filter { $0.identifier?.rawValue == "settings" }
-                        .forEach { $0.close() }
-                }
-            }
-    }
-}

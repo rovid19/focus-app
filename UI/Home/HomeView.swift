@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var controller: HomeController
     @EnvironmentObject var supabaseAuth: SupabaseAuth
+    @EnvironmentObject var router: Router
 
     var body: some View {
         VStack(spacing: 0) {
@@ -10,33 +11,36 @@ struct HomeView: View {
                 // TOP
                 topBar
                     .padding(.horizontal, 12)
-                 
                     .opacity(controller.isTimerRunning ? 0 : 1)
                     .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .bottom) // collapse bottom→top
                     .clipped()
                     .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
 
                 // MIDDLE
-                contentArea
-                    //.padding(.horizontal, 12)
-                    .frame(maxHeight: .infinity)
-                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
-
+                ScrollView {
+                    contentArea
+                        .frame(maxWidth: .infinity)
+                }
+                .frame(maxHeight: .infinity)
+                .layoutPriority(1)
+                .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
                 // BOTTOM
                 bottomBar
                     .padding(.horizontal, 12)
-                 
                     .opacity(controller.isTimerRunning ? 0 : 1)
-                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .bottom) // collapse bottom→top
+                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .top) // collapse top→bottom
                     .clipped()
                     .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
             } else {
                 loginView
             }
-            
         }
         .frame(width: 460, height: 440)
         .background(Color.white.opacity(0.1))
+        .onAppear {
+            router.changeView(view: .home)
+            print(router.currentView)
+        }
         // .shadow(color: .black.opacity(0.7), radius: 50, x: 0, y: 10)
     }
 }
@@ -161,6 +165,8 @@ private extension HomeView {
             return AnyView(controller.focusView)
         } else if controller.whichView == "stats" {
             return AnyView(controller.statsView)
+        } else if controller.whichView == "blocker" {
+            return AnyView(controller.blockerView)
         } else {
             return AnyView(EmptyView())
         }
