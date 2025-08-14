@@ -9,7 +9,7 @@ struct FocusView: View {
     var body: some View {
         VStack(spacing: 12) {
             TimerRow(controller: controller)
-            if !controller.isTimerRunning {
+            if !controller.isSessionRunning {
                 HardModeToggle(controller: controller)
             }
         }
@@ -24,12 +24,12 @@ private struct TimerRow: View {
     @EnvironmentObject var hardModeManager: HardModeManager
 
     var body: some View {
-        HStack(spacing: controller.isTimerRunning ? 0 : 12) {
+        HStack(spacing: controller.isSessionRunning ? 0 : 12) {
             DecreaseButtons(controller: controller)
             TimerCard(controller: controller)
             IncreaseButtons(controller: controller)
         }
-        .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
+        .animation(.easeInOut(duration: 0.8), value: controller.isSessionRunning)
     }
 }
 

@@ -5,22 +5,15 @@ struct TimerCard: View {
     @EnvironmentObject var hardModeManager: HardModeManager
 
     var body: some View {
-        let hideCTA = hardModeManager.isHardMode && controller.isTimerRunning
-        let isRunning = controller.isTimerRunning
+        let hideCTA = hardModeManager.isHardMode && controller.isSessionRunning
 
         VStack(spacing: 0) {
-            TitleSection(timerMinutes: controller.timerMinutes)
+            TitleSection(controller: controller)
 
-            TimerActionButton(isRunning: isRunning) {
-                if !isRunning {
-                    Task { await controller.startTimer() }
-                } else {
-                    controller.stopTimer()
-                }
-            }
-            .frame(height: hideCTA ? 0 : nil, alignment: .top)
-            .clipped()
-            .animation(.easeInOut(duration: 0.8), value: hideCTA)
+            TimerActionButton(controller: controller)
+                .frame(height: hideCTA ? 0 : nil, alignment: .top)
+                .clipped()
+                .animation(.easeInOut(duration: 0.8), value: hideCTA)
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 24)
@@ -28,7 +21,7 @@ struct TimerCard: View {
         .frame(maxHeight: .infinity)
         .layoutPriority(1)
         .background(CardBackground())
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: isRunning)
+        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isSessionRunning)
         .overlay(TimerGlow())
     }
 }
@@ -36,7 +29,7 @@ struct TimerCard: View {
 // MARK: - Subviews
 
 private struct TitleSection: View {
-    let timerMinutes: Int
+    @ObservedObject var controller: FocusController
 
     var body: some View {
         VStack(spacing: 8) {
@@ -46,35 +39,74 @@ private struct TitleSection: View {
                 .foregroundColor(.white.opacity(0.55))
                 .textCase(.uppercase)
 
-            Text("\(timerMinutes):00")
-                .font(.system(size: 48, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white)
-                .tracking(-1.0)
+            Text(
+                controller.isTimerLimited
+                    ? "\(controller.timerMinutes):00"
+                    : (!controller.isSessionRunning ? "No Time Limit" : "\(controller.timerMinutes):00")
+            )
+            .font(.system(size: controller.isTimerLimited ? 48 : 24, weight: .semibold, design: .monospaced))
+            .foregroundColor(.white)
+            .tracking(-1.0)
         }
     }
 }
 
 private struct TimerActionButton: View {
-    let isRunning: Bool
-    let action: () -> Void
+    @ObservedObject var controller: FocusController
+    private var isTimerRunning: Bool {
+        controller.isTimerRunning
+    }
+
+    private var isSessionRunning: Bool {
+        controller.isSessionRunning
+    }
 
     var body: some View {
-        Button(action: action) {
-            Label(isRunning ? "Pause" : "Start", systemImage: isRunning ? "pause" : "play")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.1))
-                        .overlay(
+        HStack {
+            Button(action: {
+                if !isSessionRunning, !isTimerRunning {
+                    Task { await controller.startTimer() }
+                } else if isSessionRunning, !isTimerRunning {
+                    Task { await controller.startTimer() }
+                } else {
+                    controller.stopTimer()
+                }
+            }) {
+                Label(isSessionRunning && isTimerRunning ? "Pause" : isSessionRunning && !isTimerRunning ? "Resume" : "Start", systemImage: isSessionRunning ? "pause" : "play")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            if controller.isSessionRunning {
+                Button(action: controller.terminateSession) {
+                    Label("Stop", systemImage: "stop")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                .fill(Color.white.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                )
                         )
-                )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 

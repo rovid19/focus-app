@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - Main BlockerCard
+
 struct BlockerCard: View {
     @ObservedObject var controller: BlockerController
 
@@ -24,6 +25,7 @@ struct BlockerCard: View {
 }
 
 // MARK: - Title
+
 struct BlockerTitle: View {
     var body: some View {
         Text("BLOCKER")
@@ -34,6 +36,7 @@ struct BlockerTitle: View {
 }
 
 // MARK: - Duration Picker
+
 struct BlockerDurationPicker: View {
     @ObservedObject var controller: BlockerController
 
@@ -44,7 +47,7 @@ struct BlockerDurationPicker: View {
                 .foregroundColor(.white.opacity(0.6))
 
             Picker("Duration (hours)", selection: $controller.selectedHours) {
-                ForEach(1...8, id: \.self) { h in
+                ForEach(1 ... 8, id: \.self) { h in
                     Text("\(h) hour\(h == 1 ? "" : "s")").tag(h)
                 }
             }
@@ -62,19 +65,23 @@ struct BlockerDurationPicker: View {
             )
         }
     }
+
+    
 }
 
 // MARK: - Timer Display
+
 struct BlockerTimerDisplay: View {
     @ObservedObject var controller: BlockerController
+    @EnvironmentObject var blockerManager: BlockerManager
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(timeString(from: controller.selectedHours * 3600))
+            Text(controller.formattedTimeLeft(from: blockerManager.isRunning ? controller.remainingTime : controller.selectedHours * 3600))
                 .font(.system(size: 40, weight: .semibold))
                 .tracking(-0.5)
 
-            if controller.hardMode && controller.isRunning {
+            if blockerManager.hardLocked && blockerManager.isRunning {
                 Text("Hard Mode Active")
                     .font(.system(size: 11, weight: .medium))
                     .padding(.horizontal, 8)
@@ -92,31 +99,22 @@ struct BlockerTimerDisplay: View {
         }
     }
 
-
-   private func timeString(from seconds: Int) -> String {
-        let m = max(0, seconds) / 60
-        let s = max(0, seconds) % 60
-        return String(format: "%02d:%02d", m, s)
-    }
-
 }
 
 // MARK: - Action Button
+
 struct BlockerActionButton: View {
     @ObservedObject var controller: BlockerController
+    @EnvironmentObject var blockerManager: BlockerManager
 
     var body: some View {
         Button(action: {
-            if controller.isRunning {
-                controller.stopOrPauseBlocker()
-            } else {
-                controller.startBlocker()
-            }
+            controller.toggleBlocker()
         }) {
             HStack(spacing: 8) {
-                Image(systemName: controller.isRunning ? "pause" : "play")
+                Image(systemName: blockerManager.isRunning ? "pause" : "play")
                     .font(.system(size: 14))
-                Text(controller.isRunning ? "Running..." : "Start Blocker")
+                Text(blockerManager.isRunning ? "Running..." : "Start Blocker")
                     .font(.system(size: 13, weight: .medium))
             }
             .padding(.horizontal, 14)

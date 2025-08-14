@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BlockerView: View {
     @ObservedObject var controller: BlockerController
+    @EnvironmentObject var blockerManager: BlockerManager
 
     init(controller: BlockerController) {
         self.controller = controller

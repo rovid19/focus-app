@@ -27,8 +27,8 @@ struct IncreaseButtons: View {
                 )
             }
             .buttonStyle(TimerControlButtonStyle())
-            .disabled(hardModeManager.isHardMode && controller.isTimerRunning)
-            .opacity((hardModeManager.isHardMode && controller.isTimerRunning) ? 0.5 : 1.0)
+            .disabled(hardModeManager.isHardMode && controller.isSessionRunning)
+            .opacity((hardModeManager.isHardMode && controller.isSessionRunning) ? 0.5 : 1.0)
 
             // +5
             Button(action: { controller.increaseBy5() }) {
@@ -48,11 +48,11 @@ struct IncreaseButtons: View {
                 )
             }
             .buttonStyle(TimerControlButtonStyle())
-            .disabled(hardModeManager.isHardMode && controller.isTimerRunning)
-            .opacity((hardModeManager.isHardMode && controller.isTimerRunning) ? 0.5 : 1.0)
+            .disabled(hardModeManager.isHardMode && controller.isSessionRunning)
+            .opacity((hardModeManager.isHardMode && controller.isSessionRunning) ? 0.5 : 1.0)
         }
-        .frame(width: controller.isTimerRunning ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
+        .frame(width: controller.isSessionRunning ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
         .clipped()
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isTimerRunning)
+        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isSessionRunning)
     }
 }

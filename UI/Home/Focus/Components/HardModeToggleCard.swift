@@ -40,9 +40,9 @@ struct HardModeToggle: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
         )
-        .opacity(controller.isTimerRunning ? 0 : 1)
-        .offset(y: controller.isTimerRunning ? 50 : 0) // slide downward
+        .opacity(controller.isSessionRunning ? 0 : 1)
+        .offset(y: controller.isSessionRunning ? 50 : 0) // slide downward
         .clipped()
-        .animation(.easeInOut(duration: 0.3), value: controller.isTimerRunning)
+        .animation(.easeInOut(duration: 0.3), value: controller.isSessionRunning)
     }
 }

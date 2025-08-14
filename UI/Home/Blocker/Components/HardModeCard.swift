@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HardModeCard: View {
     @ObservedObject var controller: BlockerController
+    @EnvironmentObject var blockerManager: BlockerManager
 
     var body: some View {
         HStack(spacing: 12) {
@@ -19,12 +20,12 @@ struct HardModeCard: View {
             }
             Spacer()
             Toggle("", isOn: Binding(
-                get: { controller.hardMode },
-                set: { _ in controller.toggleHardMode() }
+                get: { blockerManager.hardLocked },
+                set: { _ in blockerManager.toggleHardLocked() }
             ))
             .toggleStyle(SwitchToggleStyle())
-            .disabled(controller.hardLocked)
-            .opacity(controller.hardLocked ? 0.6 : 1)
+            .disabled(blockerManager.hardLocked)
+            .opacity(blockerManager.hardLocked ? 0.6 : 1)
         }
         .padding(12)
         .background(

@@ -4,6 +4,7 @@ struct HomeView: View {
     @ObservedObject var controller: HomeController
     @EnvironmentObject var supabaseAuth: SupabaseAuth
     @EnvironmentObject var router: Router
+    @EnvironmentObject var blockerManager: BlockerManager
 
     var body: some View {
         VStack(spacing: 0) {

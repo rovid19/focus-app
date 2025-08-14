@@ -13,11 +13,14 @@ struct focus_appApp: App {
     @StateObject private var hardModeManager = HardModeManager.shared
     @StateObject private var router: Router
     @StateObject private var homeController: HomeController
+    @StateObject private var blockerManager: BlockerManager
 
     init() {
         let r = Router()
+        let bm = BlockerManager.shared
         _router = StateObject(wrappedValue: r)
-        _homeController = StateObject(wrappedValue: HomeController(router: r))
+        _blockerManager = StateObject(wrappedValue: bm)
+        _homeController = StateObject(wrappedValue: HomeController(router: r, blockerManager: bm))
     }
 
     var body: some Scene {
@@ -27,6 +30,7 @@ struct focus_appApp: App {
                 .environmentObject(supabaseAuth)
                 .environmentObject(hardModeManager)
                 .environmentObject(router)
+                .environmentObject(blockerManager)
                 // Helper that reacts to router changes and opens/closes the window
                 .overlay(
                     WindowCoordinator(router: router)
