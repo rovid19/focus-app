@@ -114,7 +114,7 @@ struct BlockerActionButton: View {
             HStack(spacing: 8) {
                 Image(systemName: blockerManager.isRunning ? "pause" : "play")
                     .font(.system(size: 14))
-                Text(blockerManager.isRunning ? "Running..." : "Start Blocker")
+                Text(blockerManager.isRunning ? "Stop" : "Start Blocker")
                     .font(.system(size: 13, weight: .medium))
             }
             .padding(.horizontal, 14)

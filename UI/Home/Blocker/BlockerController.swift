@@ -3,6 +3,7 @@ import SwiftUI
 class BlockerController: ObservableObject {
     @ObservedObject var blockerManager: BlockerManager
 
+
     init(blockerManager: BlockerManager) {
         self.blockerManager = blockerManager
     }
@@ -19,6 +20,7 @@ class BlockerController: ObservableObject {
     }
 
     func toggleBlocker() {
+        print("toggleBlocker")
         blockerManager.toggleBlocker()
         if blockerManager.isRunning {
             timerStarted()

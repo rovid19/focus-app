@@ -5,6 +5,7 @@
 //  Created by Roberto Vidovic on 10.08.2025..
 //
 import SwiftUI
+import Cocoa
 
 @main
 struct focus_appApp: App {
@@ -16,11 +17,15 @@ struct focus_appApp: App {
     @StateObject private var blockerManager: BlockerManager
 
     init() {
+        // Init dependencies
         let r = Router()
         let bm = BlockerManager.shared
         _router = StateObject(wrappedValue: r)
         _blockerManager = StateObject(wrappedValue: bm)
         _homeController = StateObject(wrappedValue: HomeController(router: r, blockerManager: bm))
+
+        // Ask for Accessibility permission
+        requestAccessibilityPermission()
     }
 
     var body: some Scene {
@@ -53,5 +58,12 @@ struct focus_appApp: App {
         .windowResizability(.contentSize)
         .defaultSize(width: 500, height: 600)
     }
-}
 
+    private func requestAccessibilityPermission() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        let trusted = AXIsProcessTrustedWithOptions(options)
+        if !trusted {
+            print("Accessibility permission not granted — user has been prompted.")
+        }
+    }
+}
