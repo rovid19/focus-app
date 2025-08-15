@@ -43,6 +43,6 @@ struct HardModeToggle: View {
         .opacity(controller.isSessionRunning ? 0 : 1)
         .offset(y: controller.isSessionRunning ? 50 : 0) // slide downward
         .clipped()
-        .animation(.easeInOut(duration: 0.3), value: controller.isSessionRunning)
+        .animation(.easeInOut(duration: 0.8), value: controller.isSessionRunning)
     }
 }

@@ -1,5 +1,5 @@
-import SwiftUI
 import Combine
+import SwiftUI
 
 class FocusController: ObservableObject {
     @EnvironmentObject var hardModeManager: HardModeManager
@@ -8,15 +8,14 @@ class FocusController: ObservableObject {
             onInitialMinutesChanged()
         }
     }
-    @Published var isTimerRunning: Bool = false 
+
+    @Published var isTimerRunning: Bool = false
     @Published var timerMinutes: Int = 45
     @Published var isSessionRunning: Bool = false
     private var timer: Timer?
     @Published var isTimerLimited: Bool = true
     @ObservedObject var homeController: HomeController
     private var cancellables = Set<AnyCancellable>()
-
- 
 
     init(homeController: HomeController) {
         self.homeController = homeController
@@ -27,8 +26,6 @@ class FocusController: ObservableObject {
             .assign(to: \.isTimerRunning, on: self)
             .store(in: &cancellables)
     }
-
-
 
     private func onInitialMinutesChanged() {
         if initialTimerMinutes > 0 {
@@ -87,6 +84,7 @@ class FocusController: ObservableObject {
                     t.invalidate()
                     self.homeController.isTimerRunning = false
                     NSSound(named: "Glass")?.play()
+                    self.terminateSession()
                 }
             }
         } else {
@@ -115,13 +113,47 @@ class FocusController: ObservableObject {
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
-        initialTimerMinutes = 45
-        timerMinutes = 45
+
+        let minutesToSend = initialTimerMinutes == 0
+            ? timerMinutes
+            : (timerMinutes == 0 ? initialTimerMinutes : timerMinutes)
+
+        print("initialTimerMinutes", initialTimerMinutes)
+        print("timerMinutes", timerMinutes)
+        print("minutesToSend", minutesToSend)
+
         Task {
             await StatisticsManager.shared.addStat(
                 title: "Focus",
-                time_elapsed: self.initialTimerMinutes * 60
+                time_elapsed: minutesToSend
             )
+        }
+
+        // Animate the reset by gradually changing the timer value
+        if isTimerLimited {
+            animateTimerReset()
+        } else {
+            timerMinutes = 0
+            initialTimerMinutes = 0
+        }
+    }
+    
+    private func animateTimerReset() {
+        let startValue = timerMinutes
+        let targetValue = 45
+        let steps = 20
+        let stepDuration = 0.8 / Double(steps)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * stepDuration) {
+                let progress = Double(i) / Double(steps)
+                let currentValue = Int(Double(startValue) + (Double(targetValue - startValue) * progress))
+                self.timerMinutes = currentValue
+                
+                if i == steps {
+                    self.initialTimerMinutes = 45
+                }
+            }
         }
     }
 }

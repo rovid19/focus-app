@@ -50,6 +50,6 @@ struct DecreaseButtons: View {
         .frame(width: controller.isSessionRunning ? 0 : 44, height: 44 * 2 + 8) // lock container height
         .opacity(controller.isSessionRunning ? 0 : 1)
         .clipped()
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isSessionRunning)
+        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.isSessionRunning)
     }
 }

@@ -53,6 +53,6 @@ struct IncreaseButtons: View {
         }
         .frame(width: controller.isSessionRunning ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
         .clipped()
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isSessionRunning)
+        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.isSessionRunning)
     }
 }

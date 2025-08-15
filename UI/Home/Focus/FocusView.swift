@@ -14,6 +14,9 @@ struct FocusView: View {
             }
         }
         .padding(12)
+        .frame(maxWidth: .infinity)
+        .frame(maxHeight: .infinity)
+        //.background(Color.blue)
     }
 }
 

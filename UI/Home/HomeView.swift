@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
     @EnvironmentObject var router: Router
     @EnvironmentObject var blockerManager: BlockerManager
+    @State private var scrollViewportHeight: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -13,36 +14,54 @@ struct HomeView: View {
                 topBar
                     .padding(.horizontal, 12)
                     .opacity(controller.isTimerRunning ? 0 : 1)
-                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .bottom) // collapse bottom→top
+                    .frame(maxHeight: controller.isTimerRunning ? 0 : .infinity, alignment: .bottom)
                     .clipped()
-                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
 
                 // MIDDLE
                 ScrollView {
                     contentArea
                         .frame(maxWidth: .infinity)
+                        .frame(minHeight: scrollViewportHeight)
                 }
-                .frame(maxHeight: .infinity)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear {
+                                if proxy.size.height.isFinite && proxy.size.height > 0 {
+                                    scrollViewportHeight = proxy.size.height
+                                }
+                            }
+                            .onChange(of: proxy.size.height) { newHeight in
+                                if newHeight.isFinite && newHeight > 0 {
+                                    withAnimation(.easeInOut(duration: 0.8)) { // match your main animation
+                                        scrollViewportHeight = newHeight
+                                    }
+                                }
+                            }
+                    }
+                )
+                .scrollIndicators(.hidden)
                 .layoutPriority(1)
-                .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
+                // .background(Color.red)
+                .clipped()
+
                 // BOTTOM
                 bottomBar
                     .padding(.horizontal, 12)
                     .opacity(controller.isTimerRunning ? 0 : 1)
-                    .frame(height: controller.isTimerRunning ? 0 : nil, alignment: .top) // collapse top→bottom
+                    .frame(maxHeight: controller.isTimerRunning ? 0 : .infinity, alignment: .top)
                     .clipped()
-                    .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
             } else {
                 loginView
             }
         }
-        .frame(width: 460, height: 440)
+        .frame(width: 460, height: 440) // outer popup frame stays fixed
         .background(Color.white.opacity(0.1))
+        .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
             router.changeView(view: .home)
             print(router.currentView)
         }
-        // .shadow(color: .black.opacity(0.7), radius: 50, x: 0, y: 10)
     }
 }
 

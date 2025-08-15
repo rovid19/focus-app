@@ -21,8 +21,9 @@ struct TimerCard: View {
         .frame(maxHeight: .infinity)
         .layoutPriority(1)
         .background(CardBackground())
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isSessionRunning)
-        .overlay(TimerGlow())
+        //.animation(.spring(response: 1, dampingFraction: 1), value: controller.isTimerRunning)
+        .overlay(TimerGlow(controller: self.controller))
+       
     }
 }
 
@@ -39,14 +40,27 @@ private struct TitleSection: View {
                 .foregroundColor(.white.opacity(0.55))
                 .textCase(.uppercase)
 
-            Text(
-                controller.isTimerLimited
-                    ? "\(controller.timerMinutes):00"
-                    : (!controller.isSessionRunning ? "No Time Limit" : "\(controller.timerMinutes):00")
-            )
-            .font(.system(size: controller.isTimerLimited ? 48 : 24, weight: .semibold, design: .monospaced))
-            .foregroundColor(.white)
-            .tracking(-1.0)
+            if controller.isTimerLimited {
+                Text("\(controller.timerMinutes):00")
+                    .font(.system(size: 48, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .tracking(-1.0)
+            }
+            else if (!controller.isTimerLimited && controller.isSessionRunning) {
+                Text("\(controller.timerMinutes):00")
+                    .font(.system(size: 48, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .tracking(-1.0)
+            }
+            else {
+                Text("NO TIME LIMIT")
+                    .font(.system(size: 24, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .tracking(-1.0)
+                    .padding(.bottom, 4)
+            }
+            /*.opacity(!controller.isTimerLimited && controller.isSessionRunning ? 0 : 1)
+            .animation(.easeInOut(duration: 0.2), value: controller.isSessionRunning)*/
         }
     }
 }
