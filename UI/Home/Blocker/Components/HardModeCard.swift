@@ -24,7 +24,6 @@ struct HardModeCard: View {
                 set: { _ in blockerManager.toggleHardLocked() }
             ))
             .toggleStyle(SwitchToggleStyle())
-            .disabled(blockerManager.hardLocked)
             .opacity(blockerManager.hardLocked ? 0.6 : 1)
         }
         .padding(12)

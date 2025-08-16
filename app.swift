@@ -14,15 +14,15 @@ struct focus_appApp: App {
     @StateObject private var hardModeManager = HardModeManager.shared
     @StateObject private var router: Router
     @StateObject private var homeController: HomeController
-    @StateObject private var blockerManager: BlockerManager
+    //@StateObject private var blockerManager: BlockerManager
 
     init() {
         // Init dependencies
         let r = Router()
-        let bm = BlockerManager.shared
+        //let bm = BlockerManager.shared
         _router = StateObject(wrappedValue: r)
-        _blockerManager = StateObject(wrappedValue: bm)
-        _homeController = StateObject(wrappedValue: HomeController(router: r, blockerManager: bm))
+        //_blockerManager = StateObject(wrappedValue: bm)
+        _homeController = StateObject(wrappedValue: HomeController(router: r/*, blockerManager: bm*/))
 
         // Ask for Accessibility permission
         requestAccessibilityPermission()
@@ -35,14 +35,22 @@ struct focus_appApp: App {
                 .environmentObject(supabaseAuth)
                 .environmentObject(hardModeManager)
                 .environmentObject(router)
-                .environmentObject(blockerManager)
+                .environmentObject(BlockerManager.shared)
                 // Helper that reacts to router changes and opens/closes the window
                 .overlay(
                     WindowCoordinator(router: router)
                         .allowsHitTesting(false)
                 )
+                .onAppear {
+                    if BlockerManager.shared.resumeTimer {
+                        print("resuming timer in blocker view")
+                        homeController.blockerController.timerStarted()
+                        BlockerManager.shared.resumeTimer = false
+                    }
+                }
         }
         .menuBarExtraStyle(.window)
+      
 
         // Settings window exists, but we only open it when needed
         WindowGroup("Settings", id: "settings") {

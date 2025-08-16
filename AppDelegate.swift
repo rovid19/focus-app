@@ -4,6 +4,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         // Launch as menu bar only
         NSApp.setActivationPolicy(.accessory)
+        loadState()
     }
 
     func application(_: NSApplication, open urls: [URL]) {
@@ -19,13 +20,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     .auth
                     .exchangeCodeForSession(authCode: code)
 
-                // hop to main actor to touch @Published
-
-                SupabaseAuth.shared.user = session.user // ✅ this is all you need
+                SupabaseAuth.shared.user = session.user
                 print("Logged in \(SupabaseAuth.shared.user)")
             } catch {
                 NSLog("[blockerapp] Exchange failed: \(error)")
             }
+        }
+    }
+
+    // MARK: - Persistence
+
+    private func loadState() {
+        guard let savedData = UserDefaults.standard.data(forKey: "BlockerState"),
+              let state = try? JSONDecoder().decode(BlockerState.self, from: savedData)
+        else {
+            print("No saved BlockerState found")
+            return
+        }
+
+        if state.hardLocked {
+            BlockerManager.shared.remainingTime = state.remainingTime
+            BlockerManager.shared.isRunning = state.isRunning
+            BlockerManager.shared.hardLocked = state.hardLocked
+            BlockerManager.shared.resumeTimer = true
+
+            print("App delegate: hard lock restored — \(state)")
+        } else {
+            print("App delegate: hard lock was not active")
         }
     }
 }

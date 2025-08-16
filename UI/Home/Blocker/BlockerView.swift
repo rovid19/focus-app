@@ -15,7 +15,6 @@ struct BlockerView: View {
             HardModeCard(controller: controller)
             ProfilesCard(controller: controller)
         }
+    
     }
-
-
 }

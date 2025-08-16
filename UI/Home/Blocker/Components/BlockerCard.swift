@@ -77,7 +77,7 @@ struct BlockerTimerDisplay: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(controller.formattedTimeLeft(from: blockerManager.isRunning ? controller.remainingTime : controller.selectedHours * 3600))
+            Text(controller.formattedTimeLeft(from: blockerManager.isRunning ? blockerManager.remainingTime : controller.selectedHours * 3600))
                 .font(.system(size: 40, weight: .semibold))
                 .tracking(-0.5)
 

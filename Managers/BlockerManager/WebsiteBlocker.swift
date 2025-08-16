@@ -95,10 +95,13 @@ class WebsiteBlocker {
         }
     }
 
-    private func unblockPF() {
-        _ = runShell("pfctl -F all")
-        print("PF rules flushed.")
-    }
+  private func unblockPF() {
+    // Option 1: Reload default system rules
+    _ = runShell("pfctl -f /etc/pf.conf")
+    _ = runShell("pfctl -d") // disable packet filter
+    print("PF restored to default rules.")
+}
+
 
     // MARK: - Utilities
 
