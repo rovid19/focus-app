@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DecreaseButtons: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var hardModeManager: HardModeManager
+   
 
     var body: some View {
         VStack(spacing: 8) {
@@ -47,9 +47,9 @@ struct DecreaseButtons: View {
             }
             .buttonStyle(TimerControlButtonStyle())
         }
-        .frame(width: controller.isSessionRunning ? 0 : 44, height: 44 * 2 + 8) // lock container height
-        .opacity(controller.isSessionRunning ? 0 : 1)
+        .frame(width: controller.shouldHideControls ? 0 : 44, height: 44 * 2 + 8) // lock container height
+        .opacity(controller.shouldHideControls ? 0 : 1)
         .clipped()
-        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.isSessionRunning)
+        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.shouldHideControls)
     }
 }

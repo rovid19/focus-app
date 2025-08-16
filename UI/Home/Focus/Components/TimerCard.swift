@@ -2,10 +2,10 @@ import SwiftUI
 
 struct TimerCard: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var hardModeManager: HardModeManager
+    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
-        let hideCTA = hardModeManager.isHardMode && controller.isSessionRunning
+        let hideCTA = focusManager.isHardMode && controller.shouldHideControls
 
         VStack(spacing: 0) {
             TitleSection(controller: controller)
@@ -68,7 +68,7 @@ private struct TitleSection: View {
 private struct TimerActionButton: View {
     @ObservedObject var controller: FocusController
     private var isTimerRunning: Bool {
-        controller.isTimerRunning
+        controller.isTimerActive
     }
 
     private var isSessionRunning: Bool {

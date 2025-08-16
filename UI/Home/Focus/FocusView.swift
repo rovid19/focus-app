@@ -4,12 +4,12 @@ import SwiftUI
 
 struct FocusView: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var hardModeManager: HardModeManager
+    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
         VStack(spacing: 12) {
             TimerRow(controller: controller)
-            if !controller.isSessionRunning {
+            if !controller.shouldHideControls {
                 HardModeToggle(controller: controller)
             }
         }
@@ -24,15 +24,15 @@ struct FocusView: View {
 
 private struct TimerRow: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var hardModeManager: HardModeManager
+    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
-        HStack(spacing: controller.isSessionRunning ? 0 : 12) {
+        HStack(spacing: controller.shouldHideControls ? 0 : 12) {
             DecreaseButtons(controller: controller)
             TimerCard(controller: controller)
             IncreaseButtons(controller: controller)
         }
-        .animation(.easeInOut(duration: 0.8), value: controller.isSessionRunning)
+        .animation(.easeInOut(duration: 0.8), value: controller.shouldHideControls)
     }
 }
 

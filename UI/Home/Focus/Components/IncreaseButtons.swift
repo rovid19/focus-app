@@ -2,7 +2,7 @@ import SwiftUI
 
 struct IncreaseButtons: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var hardModeManager: HardModeManager
+    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
         VStack(spacing: 8) {
@@ -27,8 +27,8 @@ struct IncreaseButtons: View {
                 )
             }
             .buttonStyle(TimerControlButtonStyle())
-            .disabled(hardModeManager.isHardMode && controller.isSessionRunning)
-            .opacity((hardModeManager.isHardMode && controller.isSessionRunning) ? 0.5 : 1.0)
+            .disabled(focusManager.isHardMode && controller.shouldHideControls)
+            .opacity((focusManager.isHardMode && controller.shouldHideControls) ? 0.5 : 1.0)
 
             // +5
             Button(action: { controller.increaseBy5() }) {
@@ -48,11 +48,11 @@ struct IncreaseButtons: View {
                 )
             }
             .buttonStyle(TimerControlButtonStyle())
-            .disabled(hardModeManager.isHardMode && controller.isSessionRunning)
-            .opacity((hardModeManager.isHardMode && controller.isSessionRunning) ? 0.5 : 1.0)
+            .disabled(focusManager.isHardMode && controller.shouldHideControls)
+            .opacity((focusManager.isHardMode && controller.shouldHideControls) ? 0.5 : 1.0)
         }
-        .frame(width: controller.isSessionRunning ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
+        .frame(width: controller.shouldHideControls ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
         .clipped()
-        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.isSessionRunning)
+        .animation(.spring(response: 1.5, dampingFraction: 1), value: controller.shouldHideControls)
     }
 }

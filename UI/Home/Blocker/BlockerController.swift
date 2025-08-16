@@ -54,7 +54,7 @@ class BlockerController: ObservableObject {
             if BlockerManager.shared.remainingTime > 0 {
                 BlockerManager.shared.remainingTime -= 1
                 print(BlockerManager.shared.remainingTime)
-                BlockerManager.shared.saveState()
+                AppStateManager.shared.saveBlockerState(BlockerState(remainingTime: BlockerManager.shared.remainingTime, isRunning: BlockerManager.shared.isRunning, hardLocked: BlockerManager.shared.hardLocked))
             } else {
                 timer.invalidate()
             }
@@ -64,7 +64,7 @@ class BlockerController: ObservableObject {
     func timerStopped() {
         BlockerManager.shared.remainingTime = selectedHours * 3600
         timer?.invalidate()
-        BlockerManager.shared.saveState()
+        AppStateManager.shared.saveBlockerState(BlockerState(remainingTime: BlockerManager.shared.remainingTime, isRunning: BlockerManager.shared.isRunning, hardLocked: BlockerManager.shared.hardLocked))
     }
 
 

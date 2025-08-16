@@ -34,7 +34,7 @@ struct HomeView_Previews: PreviewProvider {
         )
 
         // HardModeManager from your real code
-        let mockHardModeManager = HardModeManager()
+        let mockHardModeManager = FocusManager()
 
         return HomeView(controller: mockController)
             .environmentObject(mockAuth)

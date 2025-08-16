@@ -29,13 +29,13 @@ class BlockerManager: ObservableObject {
         if hardLocked {
             hardLocked = false
             removeHardLockFlag()
-            saveState()
+            AppStateManager.shared.saveBlockerState(BlockerState(remainingTime: remainingTime, isRunning: isRunning, hardLocked: hardLocked))
             // Remove Activity Monitor from block list
             blockedApps.removeAll { $0 == "com.apple.ActivityMonitor" }
         } else {
             hardLocked = true
             createHardLockFlag()
-            saveState()
+            AppStateManager.shared.saveBlockerState(BlockerState(remainingTime: remainingTime, isRunning: isRunning, hardLocked: hardLocked))
             // Add Activity Monitor to block list
             if !blockedApps.contains("com.apple.ActivityMonitor") {
                 blockedApps.append("com.apple.ActivityMonitor")
@@ -122,22 +122,6 @@ class BlockerManager: ObservableObject {
         return String(data: data, encoding: .utf8) ?? ""
     }
 
-    func saveState() {
-        let state = BlockerState(
-            remainingTime: BlockerManager.shared.remainingTime,
-            isRunning: BlockerManager.shared.isRunning,
-            hardLocked: BlockerManager.shared.hardLocked
-        )
-
-        if let encoded = try? JSONEncoder().encode(state) {
-            UserDefaults.standard.set(encoded, forKey: "BlockerState")
-            print("BlockerState saved: \(state)") // prints nicely because BlockerState is Codable + you can make it CustomStringConvertible if you want
-        }
-    }
+  
 }
 
-struct BlockerState: Codable {
-    var remainingTime: Int
-    var isRunning: Bool
-    var hardLocked: Bool
-}

@@ -31,22 +31,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Persistence
 
     private func loadState() {
-        guard let savedData = UserDefaults.standard.data(forKey: "BlockerState"),
-              let state = try? JSONDecoder().decode(BlockerState.self, from: savedData)
-        else {
-            print("No saved BlockerState found")
-            return
-        }
+       let blockerState = AppStateManager.shared.loadBlockerState()
+         
 
-        if state.hardLocked {
-            BlockerManager.shared.remainingTime = state.remainingTime
-            BlockerManager.shared.isRunning = state.isRunning
-            BlockerManager.shared.hardLocked = state.hardLocked
-            BlockerManager.shared.resumeTimer = true
-
-            print("App delegate: hard lock restored — \(state)")
-        } else {
-            print("App delegate: hard lock was not active")
-        }
+            if blockerState?.hardLocked ?? true {
+                print("blockerState locked")
+                BlockerManager.shared.hardLocked = true
+                BlockerManager.shared.remainingTime = blockerState?.remainingTime ?? 0
+                BlockerManager.shared.isRunning = blockerState?.isRunning ?? false
+                BlockerManager.shared.resumeTimer = true
+            }
     }
 }

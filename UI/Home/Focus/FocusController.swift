@@ -1,21 +1,31 @@
+
 import Combine
 import SwiftUI
 
 class FocusController: ObservableObject {
-    @EnvironmentObject var hardModeManager: HardModeManager
     private(set) var initialTimerMinutes: Int = 45 {
         didSet {
             onInitialMinutesChanged()
         }
     }
 
-    @Published var isTimerRunning: Bool = false
+    //@Published var isTimerRunning: Bool = false
     @Published var timerMinutes: Int = 45
     @Published var isSessionRunning: Bool = false
+    
+    // Computed property that combines your conditional logic
+    var shouldHideControls: Bool {
+        return isSessionRunning // Change this single line to control all conditional rendering
+    }
+    
+    // Computed property for timer running state - centralized control point
+    var isTimerActive: Bool {
+        return isTimerRunning // Change this single line to control all timer-running conditional rendering
+    }
     private var timer: Timer?
     @Published var isTimerLimited: Bool = true
     @ObservedObject var homeController: HomeController
-    private var cancellables = Set<AnyCancellable>()
+     private var cancellables = Set<AnyCancellable>()
 
     init(homeController: HomeController) {
         self.homeController = homeController
@@ -137,19 +147,19 @@ class FocusController: ObservableObject {
             initialTimerMinutes = 0
         }
     }
-    
+
     private func animateTimerReset() {
         let startValue = timerMinutes
         let targetValue = 45
         let steps = 20
         let stepDuration = 0.8 / Double(steps)
-        
-        for i in 0...steps {
+
+        for i in 0 ... steps {
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * stepDuration) {
                 let progress = Double(i) / Double(steps)
                 let currentValue = Int(Double(startValue) + (Double(targetValue - startValue) * progress))
                 self.timerMinutes = currentValue
-                
+
                 if i == steps {
                     self.initialTimerMinutes = 45
                 }

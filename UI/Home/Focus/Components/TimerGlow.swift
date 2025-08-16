@@ -5,7 +5,7 @@ struct TimerGlow: View {
     @State private var opacity: Double = 0.0
 
     private var shouldAnimate: Bool {
-        controller.isSessionRunning && controller.isTimerRunning
+        controller.isSessionRunning && controller.isTimerActive
     }
 
     var body: some View {

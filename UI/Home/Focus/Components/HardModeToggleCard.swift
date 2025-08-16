@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HardModeToggle: View {
-    @EnvironmentObject var hardModeManager: HardModeManager
+    @EnvironmentObject var focusManager: FocusManager
     @ObservedObject var controller: FocusController
 
     var body: some View {
@@ -26,8 +26,8 @@ struct HardModeToggle: View {
             Spacer()
 
             Toggle("", isOn: Binding(
-                get: { hardModeManager.isHardMode },
-                set: { _ in hardModeManager.toggleHardMode() }
+                get: { focusManager.isHardMode },
+                set: { _ in focusManager.toggleHardMode() }
             ))
             .toggleStyle(CustomToggleStyle())
         }
@@ -40,9 +40,9 @@ struct HardModeToggle: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
         )
-        .opacity(controller.isSessionRunning ? 0 : 1)
-        .offset(y: controller.isSessionRunning ? 50 : 0) // slide downward
+        .opacity(controller.shouldHideControls ? 0 : 1)
+        .offset(y: controller.shouldHideControls ? 50 : 0) // slide downward
         .clipped()
-        .animation(.easeInOut(duration: 0.8), value: controller.isSessionRunning)
+        .animation(.easeInOut(duration: 0.8), value: controller.shouldHideControls)
     }
 }
