@@ -5,7 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
     @EnvironmentObject var router: Router
     @EnvironmentObject var blockerManager: BlockerManager
-    
+
     @State private var scrollViewportHeight: CGFloat = 0
 
     var body: some View {
@@ -56,8 +56,12 @@ struct HomeView: View {
                 loginView
             }
         }
-        .frame(width: 460, height: 440) // outer popup frame stays fixed
-        .background(Color.white.opacity(0.1))
+        .frame(width: 460, height: 420) // outer popup frame stays fixed
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
             router.changeView(view: .home)
@@ -131,7 +135,7 @@ private extension HomeView {
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "power")
-                                .font(.system(size: 16))
+                                .font(.custom("Inter-Regular", size: 16))
                                 .foregroundColor(.white.opacity(0.7))
                             Text("Logout")
                         }
@@ -145,7 +149,7 @@ private extension HomeView {
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: "gear")
-                                .font(.system(size: 16))
+                                .font(.custom("Inter-Regular", size: 16))
                                 .foregroundColor(.white.opacity(0.7))
                             Text("Settings")
                         }
@@ -153,10 +157,10 @@ private extension HomeView {
                     .buttonStyle(GlassButtonStyle())
                 }
 
-                .padding(.vertical, 12)
-                .padding(.horizontal, 12)
+                // .padding(.vertical, 12)
+                // .padding(.horizontal, 12)
             }
-            .background(cardBackground)
+            // .background(cardBackground)
             .padding(.bottom, 12)
         }
     }
@@ -165,12 +169,11 @@ private extension HomeView {
     var loginView: some View {
         VStack(spacing: 20) {
             Image(systemName: "brain.head.profile")
-                .font(.system(size: 60))
+                .font(.custom("Inter-Regular", size: 60))
                 .foregroundColor(.blue)
 
             Text("Welcome to Focus App")
-                .font(.title2)
-                .fontWeight(.medium)
+                .font(.custom("Inter-Regular", size: 16))
 
             Button("Sign in with Google") {
                 controller.signIn()
@@ -223,11 +226,11 @@ private extension HomeView {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 16))
+                    .font(.custom("Inter-Regular", size: 16))
                     .foregroundColor(isActive ? .white : .white.opacity(0.8))
 
                 Text(title)
-                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .font(.custom("Inter-Regular", size: 14))
                     .tracking(-0.5)
                     .foregroundColor(isActive ? .white : .white.opacity(0.6))
             }
@@ -247,7 +250,7 @@ struct GlassButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 12, weight: .medium))
+            .font(.custom("Inter-Regular", size: 12))
             .foregroundColor(.white)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)

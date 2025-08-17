@@ -9,8 +9,7 @@ struct StatsView: View {
             // Header
             HStack {
                 Text("Focus Statistics")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.custom("Inter-Regular", size: 16))
 
                 Spacer()
 
@@ -30,15 +29,15 @@ struct StatsView: View {
                 // Empty state
                 VStack(spacing: 15) {
                     Image(systemName: "chart.bar.xaxis")
-                        .font(.system(size: 50))
+                        .font(.custom("Inter-Regular", size: 50))
                         .foregroundColor(.gray)
 
                     Text("No Statistics Yet")
-                        .font(.headline)
+                        .font(.custom("Inter-Regular", size: 16))
                         .foregroundColor(.secondary)
 
                     Text("Complete your first focus session to see statistics here")
-                        .font(.subheadline)
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -79,8 +78,7 @@ struct StatRowView: View {
                     if isEditing {
                         // Edit mode - show text field
                         TextField("Title", text: $newTitle)
-                            .font(.headline)
-                            .fontWeight(.medium)
+                            .font(.custom("Inter-Regular", size: 16))
                             .textFieldStyle(PlainTextFieldStyle())
                             .focused($isTextFieldFocused)
                             .onSubmit {
@@ -101,13 +99,12 @@ struct StatRowView: View {
                     } else {
                         // View mode - show title
                         Text(stat.title)
-                            .font(.headline)
-                            .fontWeight(.medium)
+                            .font(.custom("Inter-Regular", size: 16))
                     }
 
                     if let id = stat.id {
                         Text("#\(id)")
-                            .font(.caption)
+                            .font(.custom("Inter-Regular", size: 12))
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -117,7 +114,7 @@ struct StatRowView: View {
                 }
 
                 Text("User ID: \(stat.userId.uuidString.prefix(8))...")
-                    .font(.caption)
+                    .font(.custom("Inter-Regular", size: 12))
                     .foregroundColor(.secondary)
             }
 
@@ -125,12 +122,11 @@ struct StatRowView: View {
 
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(stat.time_elapsed)")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.custom("Inter-Regular", size: 16))
                     .foregroundColor(.blue)
 
                 Text("minutes")
-                    .font(.caption)
+                    .font(.custom("Inter-Regular", size: 12))
                     .foregroundColor(.secondary)
             }
 
@@ -149,7 +145,7 @@ struct StatRowView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
-                    .font(.title3)
+                    .font(.custom("Inter-Regular", size: 16))
                     .foregroundColor(.secondary)
             }
             .buttonStyle(PlainButtonStyle())

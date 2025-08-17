@@ -9,10 +9,10 @@ struct IncreaseButtons: View {
             Button(action: { controller.increaseBy15() }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
@@ -33,7 +33,7 @@ struct IncreaseButtons: View {
             Button(action: { controller.increaseBy5() }) {
                 HStack(spacing: 8) {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 16))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)

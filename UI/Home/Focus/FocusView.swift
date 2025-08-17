@@ -6,16 +6,23 @@ struct FocusView: View {
     @ObservedObject var controller: FocusController
 
     var body: some View {
+        let isSessionRunning: Bool = controller.isSessionRunning
+        let isTimerRunning: Bool = controller.homeController.isTimerRunning
+
         VStack(spacing: 12) {
             TimerRow(controller: controller)
             if !controller.shouldHideControls {
                 HardModeToggle(controller: controller)
             }
         }
-        .padding(12)
+        .padding(.horizontal, !isSessionRunning && !isTimerRunning ? 24
+            : (isSessionRunning && !isTimerRunning ? 24 : 0))
+        .padding(.vertical, !isSessionRunning && !isTimerRunning ? 12
+            : (isSessionRunning && !isTimerRunning ? 12 : 0))
+        .animation(.easeInOut(duration: 0.4), value: controller.isTimerLimited)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
-        //.background(Color.blue)
+        // .background(Color.blue)
     }
 }
 

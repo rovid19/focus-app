@@ -10,10 +10,10 @@ struct DecreaseButtons: View {
             Button(action: { controller.decreaseBy15() }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 12))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 12))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
@@ -32,7 +32,7 @@ struct DecreaseButtons: View {
             Button(action: { controller.decreaseBy5() }) {
                 HStack(spacing: 8) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)

@@ -13,8 +13,12 @@ struct BlockerView: View {
         VStack(spacing: 12) {
             BlockerCard(controller: controller)
             HardModeCard(controller: controller)
+            DurationPickerCard(controller: controller)
             ProfilesCard(controller: controller)
         }
-    
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .frame(maxHeight: .infinity)
     }
 }

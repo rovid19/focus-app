@@ -12,8 +12,7 @@ struct SettingsView: View {
             // Header
             HStack {
                 Text("Settings")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.custom("Inter-Regular", size: 16))
                 
                 Spacer()
             }
@@ -23,17 +22,16 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "globe")
-                        .font(.title2)
+                        .font(.custom("Inter-Regular", size: 16))
                         .foregroundColor(.blue)
                     
                     Text("Websites Blocker")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.custom("Inter-Regular", size: 16))
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Block distracting websites during focus sessions")
-                        .font(.subheadline)
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.secondary)
                     
                     Button("Configure Websites") {
@@ -51,17 +49,16 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "app.badge")
-                        .font(.title2)
+                        .font(.custom("Inter-Regular", size: 16))
                         .foregroundColor(.green)
                     
                     Text("Apps Blocker")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.custom("Inter-Regular", size: 16))
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Block distracting applications during focus sessions")
-                        .font(.subheadline)
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.secondary)
                     
                     Button("Configure Apps") {

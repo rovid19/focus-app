@@ -4,6 +4,7 @@
 //
 //  Created by Roberto Vidovic on 10.08.2025..
 //
+
 import Cocoa
 import SwiftUI
 
@@ -13,7 +14,6 @@ struct focus_appApp: App {
     @StateObject private var supabaseAuth = SupabaseAuth.shared
     @StateObject private var router: Router
     @StateObject private var homeController: HomeController
-    // @StateObject private var blockerManager: BlockerManager
 
     init() {
         let r = Router()
@@ -22,39 +22,31 @@ struct focus_appApp: App {
         _router = StateObject(wrappedValue: r)
         _homeController = StateObject(wrappedValue: hc)
 
-        // ✅ Call loadState here instead of AppDelegate
         loadState(hc: hc)
-
         requestAccessibilityPermission()
     }
 
     var body: some Scene {
-        // Always present the menu bar item
         MenuBarExtra("Focus App", systemImage: "brain.head.profile") {
             homeController.homeView
                 .environmentObject(supabaseAuth)
                 .environmentObject(router)
                 .environmentObject(BlockerManager.shared)
-                // Helper that reacts to router changes and opens/closes the window
-                .overlay(
-                    WindowCoordinator(router: router)
-                        .allowsHitTesting(false)
-                )
+                .overlay(WindowCoordinator(router: router).allowsHitTesting(false))
+                .environment(\.font, .custom("Inter-Regular", size: 16))
                 .onAppear {
-                    if BlockerManager.shared.resumeTimer {}
+                    makeWindowOpaque(window: NSApp.windows.first(where: { $0.level == .popUpMenu })!)
                 }
         }
         .menuBarExtraStyle(.window)
 
-        // Settings window exists, but we only open it when needed
         WindowGroup("Settings", id: "settings") {
             SettingsView(controller: SettingsController())
                 .environmentObject(router)
                 .onDisappear {
                     router.changeView(view: .home)
-                    print("Settings window closed")
-                    print(router.currentView)
                 }
+                .environment(\.font, .custom("Inter-Regular", size: 16))
         }
         .windowStyle(.titleBar)
         .windowResizability(.contentSize)
@@ -73,21 +65,15 @@ struct focus_appApp: App {
         let blockerState = AppStateManager.shared.loadBlockerState()
         let focusState = AppStateManager.shared.loadFocusState()
 
-        print("focusState", focusState)
-        print("blockerState", blockerState)
-
         if blockerState?.hardLocked ?? true {
-            print("blockerState locked")
             BlockerManager.shared.hardLocked = true
             BlockerManager.shared.remainingTime = blockerState?.remainingTime ?? 0
-            BlockerManager.shared.isRunning = blockerState?.isRunning ?? false  
+            BlockerManager.shared.isRunning = blockerState?.isRunning ?? false
             BlockerManager.shared.resumeTimer = true
-            print("resuming timer in blocker view")
             homeController.blockerController.timerStarted()
             BlockerManager.shared.resumeTimer = false
         }
         if let state = focusState, state.isHardMode, state.isTimerRunning {
-            print("ran")
             Task { @MainActor in
                 await hc.focusController.sessionQuitDuringHardMode(
                     timerMinutes: AppStateManager.shared.loadFocusState()?.timerMinutes ?? 0,
@@ -95,6 +81,26 @@ struct focus_appApp: App {
                     isHardMode: AppStateManager.shared.loadFocusState()?.isHardMode ?? false,
                     isTimerRunning: AppStateManager.shared.loadFocusState()?.isTimerRunning ?? false
                 )
+            }
+        }
+    }
+
+    private func makeWindowOpaque(window _: NSWindow) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let menuBarWindow = NSApp.windows.first(where: { $0.level == .popUpMenu }) {
+                menuBarWindow.isOpaque = false
+                menuBarWindow.backgroundColor = .clear
+                menuBarWindow.hasShadow = false
+
+                if let contentView = menuBarWindow.contentView {
+                    contentView.wantsLayer = true
+                    if let layer = contentView.layer {
+                        layer.cornerRadius = 12
+                        layer.masksToBounds = true
+                        layer.borderWidth = 1
+                        layer.borderColor = NSColor.white.withAlphaComponent(0.1).cgColor
+                    }
+                }
             }
         }
     }

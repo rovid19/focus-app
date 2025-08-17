@@ -3,13 +3,13 @@ import Combine
 import SwiftUI
 
 class FocusController: ObservableObject {
-    private(set) var initialTimerMinutes: Int = 45 {
+    private(set) var initialTimerMinutes: Int = 1800 {
         didSet {
             onInitialMinutesChanged()
         }
     }
     @Published var isTimerRunning: Bool = false
-    @Published var timerMinutes: Int = 45
+    @Published var timerMinutes: Int = 1800
     @Published var isSessionRunning: Bool = false
     @Published var isHardMode: Bool = false
     private var timer: Timer?
@@ -51,29 +51,29 @@ class FocusController: ObservableObject {
     func decreaseBy5() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes = max(0, timerMinutes - 5)
-        initialTimerMinutes = max(0, initialTimerMinutes - 5)
+        timerMinutes = max(0, timerMinutes - 60)
+        initialTimerMinutes = max(0, initialTimerMinutes - 60)
     }
 
     func decreaseBy15() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes = max(0, timerMinutes - 15)
-        initialTimerMinutes = max(0, initialTimerMinutes - 15)
+        timerMinutes = max(0, timerMinutes - 900)
+        initialTimerMinutes = max(0, initialTimerMinutes - 900)
     }
 
     func increaseBy5() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes += 5
-        initialTimerMinutes += 5
+        timerMinutes += 60
+        initialTimerMinutes += 60
     }
 
     func increaseBy15() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes += 15
-        initialTimerMinutes += 15
+        timerMinutes += 900
+        initialTimerMinutes += 900
     }
 
     func toggleHardMode() {
@@ -130,6 +130,9 @@ class FocusController: ObservableObject {
 
     func stopTimer() {
         timer?.invalidate()
+        if homeController.isTimerRunning {
+            homeController.isTimerRunning = false
+        }
         timer = nil
         print("timer running", homeController.isTimerRunning)
         print("session running", isSessionRunning)
@@ -173,7 +176,7 @@ class FocusController: ObservableObject {
 
     private func animateTimerReset() {
         let startValue = timerMinutes
-        let targetValue = 45
+        let targetValue = 1800
         let steps = 20
         let stepDuration = 0.8 / Double(steps)
 
@@ -184,7 +187,7 @@ class FocusController: ObservableObject {
                 self.timerMinutes = currentValue
 
                 if i == steps {
-                    self.initialTimerMinutes = 45
+                    self.initialTimerMinutes = 1800
                 }
             }
         }

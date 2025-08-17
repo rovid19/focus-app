@@ -6,13 +6,14 @@ struct BlockerCard: View {
     @ObservedObject var controller: BlockerController
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             BlockerTitle()
-            BlockerDurationPicker(controller: controller)
             BlockerTimerDisplay(controller: controller)
             BlockerActionButton(controller: controller)
+      
         }
-        .padding(14)
+        .padding(32)
+         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.05))
@@ -21,6 +22,9 @@ struct BlockerCard: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
         )
+
+       
+
     }
 }
 
@@ -29,45 +33,14 @@ struct BlockerCard: View {
 struct BlockerTitle: View {
     var body: some View {
         Text("BLOCKER")
-            .font(.system(size: 11, weight: .medium))
-            .tracking(0.8)
+            .font(.custom("Inter-Regular", size: 12))
+            .tracking(1.5)
             .foregroundColor(.white.opacity(0.55))
+            .padding(.bottom, 8)
+            .textCase(.uppercase)
     }
 }
 
-// MARK: - Duration Picker
-
-struct BlockerDurationPicker: View {
-    @ObservedObject var controller: BlockerController
-
-    var body: some View {
-        VStack(spacing: 6) {
-            Text("Duration (hours)")
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.6))
-
-            Picker("Duration (hours)", selection: $controller.selectedHours) {
-                ForEach(1 ... 8, id: \.self) { h in
-                    Text("\(h) hour\(h == 1 ? "" : "s")").tag(h)
-                }
-            }
-            .pickerStyle(.menu)
-            .frame(width: 160)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                    )
-            )
-        }
-    }
-
-    
-}
 
 // MARK: - Timer Display
 
@@ -78,14 +51,14 @@ struct BlockerTimerDisplay: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(controller.formattedTimeLeft(from: blockerManager.isRunning ? blockerManager.remainingTime : controller.selectedHours * 3600))
-                .font(.system(size: 40, weight: .semibold))
+                .font(.custom("Inter-Regular", size: 48))
                 .tracking(-0.5)
 
             if blockerManager.hardLocked && blockerManager.isRunning {
                 Text("Hard Mode Active")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.custom("Inter-Regular", size: 12))
                     .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    //.padding(.vertical, 4)
                     .background(
                         Capsule()
                             .fill(Color.white.opacity(0.1))
@@ -113,9 +86,9 @@ struct BlockerActionButton: View {
         }) {
             HStack(spacing: 8) {
                 Image(systemName: blockerManager.isRunning ? "pause" : "play")
-                    .font(.system(size: 14))
+                    .font(.custom("Inter-Regular", size: 14))
                 Text(blockerManager.isRunning ? "Stop" : "Start Blocker")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.custom("Inter-Regular", size: 13))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)

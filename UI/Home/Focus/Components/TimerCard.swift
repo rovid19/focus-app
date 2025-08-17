@@ -14,15 +14,14 @@ struct TimerCard: View {
                 .clipped()
                 .animation(.easeInOut(duration: 0.8), value: hideCTA)
         }
-        .padding(.horizontal, 32)
-        .padding(.vertical, 24)
+        //.padding(.horizontal, 32)
+        //.padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
         .layoutPriority(1)
         .background(CardBackground())
-        //.animation(.spring(response: 1, dampingFraction: 1), value: controller.isTimerRunning)
-        .overlay(TimerGlow(controller: self.controller))
-       
+        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isTimerLimited)
+        .overlay(TimerGlow(controller: controller))
     }
 }
 
@@ -34,32 +33,27 @@ private struct TitleSection: View {
     var body: some View {
         VStack(spacing: 8) {
             Text("FOCUS TIME")
-                .font(.system(size: 11, weight: .medium))
+                .font(.custom("Inter-Regular", size: 12))
                 .tracking(1.5)
                 .foregroundColor(.white.opacity(0.55))
                 .textCase(.uppercase)
 
             if controller.isTimerLimited {
-                Text("\(controller.timerMinutes):00")
-                    .font(.system(size: 48, weight: .semibold, design: .monospaced))
+                Text("\(controller.homeController.blockerController.formattedTimeLeft(from: controller.timerMinutes))")
+                    .font(.custom("Inter_18pt-Medium", size: 48))
                     .foregroundColor(.white)
-                    .tracking(-1.0)
-            }
-            else if (!controller.isTimerLimited && controller.isSessionRunning) {
-                Text("\(controller.timerMinutes):00")
-                    .font(.system(size: 48, weight: .semibold, design: .monospaced))
+            } else if !controller.isTimerLimited && controller.isSessionRunning {
+                Text("\(controller.homeController.blockerController.formattedTimeLeft(from: controller.timerMinutes))")
+                    .font(.custom("Inter_18pt-Medium", size: 48))
                     .foregroundColor(.white)
-                    .tracking(-1.0)
-            }
-            else {
-                Text("NO TIME LIMIT")
-                    .font(.system(size: 24, weight: .semibold, design: .monospaced))
+            } else {
+                Text("No time limit")
+                    .font(.custom("Inter_18pt-Bold", size: 24))
                     .foregroundColor(.white)
-                    .tracking(-1.0)
                     .padding(.bottom, 4)
             }
-            /*.opacity(!controller.isTimerLimited && controller.isSessionRunning ? 0 : 1)
-            .animation(.easeInOut(duration: 0.2), value: controller.isSessionRunning)*/
+            /* .opacity(!controller.isTimerLimited && controller.isSessionRunning ? 0 : 1)
+             .animation(.easeInOut(duration: 0.2), value: controller.isSessionRunning) */
         }
     }
 }

@@ -8,13 +8,13 @@ struct HardModeCard: View {
         HStack(spacing: 12) {
             HStack(spacing: 12) {
                 Image(systemName: "shield")
-                    .font(.system(size: 16))
+                    .font(.custom("Inter-Regular", size: 16))
                     .foregroundColor(.white.opacity(0.7))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Hard Mode")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.custom("Inter-Regular", size: 14))
                     Text("When enabled, you cannot turn it off or change time while a session is running.")
-                        .font(.system(size: 12))
+                        .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.6))
                 }
             }
