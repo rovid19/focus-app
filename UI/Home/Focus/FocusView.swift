@@ -4,7 +4,6 @@ import SwiftUI
 
 struct FocusView: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
         VStack(spacing: 12) {
@@ -24,7 +23,6 @@ struct FocusView: View {
 
 private struct TimerRow: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
         HStack(spacing: controller.shouldHideControls ? 0 : 12) {

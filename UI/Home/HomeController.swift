@@ -3,8 +3,9 @@ import Combine
 import SwiftUI
 
 class HomeController: ObservableObject {
-    @Published var whichView: String = "focus"
     @Published var isTimerRunning: Bool = false
+    @Published var whichView: String = "focus"
+
     @ObservedObject var router: Router
     //@ObservedObject var blockerManager: BlockerManager
 

@@ -16,14 +16,15 @@ struct focus_appApp: App {
     // @StateObject private var blockerManager: BlockerManager
 
     init() {
-        // Init dependencies
         let r = Router()
-        // let bm = BlockerManager.shared
-        _router = StateObject(wrappedValue: r)
-        // _blockerManager = StateObject(wrappedValue: bm)
-        _homeController = StateObject(wrappedValue: HomeController(router: r /* , blockerManager: bm */ ))
+        let hc = HomeController(router: r)
 
-        // Ask for Accessibility permission
+        _router = StateObject(wrappedValue: r)
+        _homeController = StateObject(wrappedValue: hc)
+
+        // ✅ Call loadState here instead of AppDelegate
+        loadState(hc: hc)
+
         requestAccessibilityPermission()
     }
 
@@ -33,7 +34,6 @@ struct focus_appApp: App {
             homeController.homeView
                 .environmentObject(supabaseAuth)
                 .environmentObject(router)
-                .environmentObject(FocusManager.shared)
                 .environmentObject(BlockerManager.shared)
                 // Helper that reacts to router changes and opens/closes the window
                 .overlay(
@@ -41,11 +41,7 @@ struct focus_appApp: App {
                         .allowsHitTesting(false)
                 )
                 .onAppear {
-                    if BlockerManager.shared.resumeTimer {
-                        print("resuming timer in blocker view")
-                        homeController.blockerController.timerStarted()
-                        BlockerManager.shared.resumeTimer = false
-                    }
+                    if BlockerManager.shared.resumeTimer {}
                 }
         }
         .menuBarExtraStyle(.window)
@@ -70,6 +66,36 @@ struct focus_appApp: App {
         let trusted = AXIsProcessTrustedWithOptions(options)
         if !trusted {
             print("Accessibility permission not granted — user has been prompted.")
+        }
+    }
+
+    private func loadState(hc: HomeController) {
+        let blockerState = AppStateManager.shared.loadBlockerState()
+        let focusState = AppStateManager.shared.loadFocusState()
+
+        print("focusState", focusState)
+        print("blockerState", blockerState)
+
+        if blockerState?.hardLocked ?? true {
+            print("blockerState locked")
+            BlockerManager.shared.hardLocked = true
+            BlockerManager.shared.remainingTime = blockerState?.remainingTime ?? 0
+            BlockerManager.shared.isRunning = blockerState?.isRunning ?? false  
+            BlockerManager.shared.resumeTimer = true
+            print("resuming timer in blocker view")
+            homeController.blockerController.timerStarted()
+            BlockerManager.shared.resumeTimer = false
+        }
+        if let state = focusState, state.isHardMode, state.isTimerRunning {
+            print("ran")
+            Task { @MainActor in
+                await hc.focusController.sessionQuitDuringHardMode(
+                    timerMinutes: AppStateManager.shared.loadFocusState()?.timerMinutes ?? 0,
+                    initialTimerMinutes: AppStateManager.shared.loadFocusState()?.initialTimerMinutes ?? 0,
+                    isHardMode: AppStateManager.shared.loadFocusState()?.isHardMode ?? false,
+                    isTimerRunning: AppStateManager.shared.loadFocusState()?.isTimerRunning ?? false
+                )
+            }
         }
     }
 }

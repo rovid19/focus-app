@@ -10,6 +10,7 @@ struct FocusSessionState: Codable {
     var timerMinutes: Int
     var isTimerRunning: Bool
     var isHardMode: Bool
+    var initialTimerMinutes: Int
 }
 
 
@@ -26,7 +27,7 @@ final class AppStateManager {
     func saveBlockerState(_ state: BlockerState) {
         if let data = try? JSONEncoder().encode(state) {
             defaults.set(data, forKey: blockerKey)
-            print("BlockerState saved: \(data)")
+            print("BlockerState saved: \(state)")
         }
 
       
@@ -35,7 +36,7 @@ final class AppStateManager {
     func saveFocusState(_ state: FocusSessionState) {
         if let data = try? JSONEncoder().encode(state) {
             defaults.set(data, forKey: focusKey)
-            print("FocusState saved: \(data)")
+            print("FocusState saved: \(state)")
         }
     }
     

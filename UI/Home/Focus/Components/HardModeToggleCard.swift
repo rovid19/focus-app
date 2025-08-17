@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct HardModeToggle: View {
-    @EnvironmentObject var focusManager: FocusManager
     @ObservedObject var controller: FocusController
 
     var body: some View {
@@ -26,8 +25,8 @@ struct HardModeToggle: View {
             Spacer()
 
             Toggle("", isOn: Binding(
-                get: { focusManager.isHardMode },
-                set: { _ in focusManager.toggleHardMode() }
+                get: { controller.isHardMode },
+                set: { _ in controller.toggleHardMode() }
             ))
             .toggleStyle(CustomToggleStyle())
         }

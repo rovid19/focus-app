@@ -3,8 +3,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         // Launch as menu bar only
-        NSApp.setActivationPolicy(.accessory)
-        loadState()
+        NSApp.setActivationPolicy(.accessory)        
     }
 
     func application(_: NSApplication, open urls: [URL]) {
@@ -26,20 +25,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 NSLog("[blockerapp] Exchange failed: \(error)")
             }
         }
-    }
-
-    // MARK: - Persistence
-
-    private func loadState() {
-       let blockerState = AppStateManager.shared.loadBlockerState()
-         
-
-            if blockerState?.hardLocked ?? true {
-                print("blockerState locked")
-                BlockerManager.shared.hardLocked = true
-                BlockerManager.shared.remainingTime = blockerState?.remainingTime ?? 0
-                BlockerManager.shared.isRunning = blockerState?.isRunning ?? false
-                BlockerManager.shared.resumeTimer = true
-            }
     }
 }

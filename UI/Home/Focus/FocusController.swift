@@ -8,10 +8,14 @@ class FocusController: ObservableObject {
             onInitialMinutesChanged()
         }
     }
-
-    //@Published var isTimerRunning: Bool = false
+    @Published var isTimerRunning: Bool = false
     @Published var timerMinutes: Int = 45
     @Published var isSessionRunning: Bool = false
+    @Published var isHardMode: Bool = false
+    private var timer: Timer?
+    @Published var isTimerLimited: Bool = true
+    @ObservedObject var homeController: HomeController
+     private var cancellables = Set<AnyCancellable>()
     
     // Computed property that combines your conditional logic
     var shouldHideControls: Bool {
@@ -22,10 +26,7 @@ class FocusController: ObservableObject {
     var isTimerActive: Bool {
         return isTimerRunning // Change this single line to control all timer-running conditional rendering
     }
-    private var timer: Timer?
-    @Published var isTimerLimited: Bool = true
-    @ObservedObject var homeController: HomeController
-     private var cancellables = Set<AnyCancellable>()
+
 
     init(homeController: HomeController) {
         self.homeController = homeController
@@ -75,8 +76,19 @@ class FocusController: ObservableObject {
         initialTimerMinutes += 15
     }
 
+    func toggleHardMode() {
+        print("toggleHardMode on focus controller")
+        isHardMode = !isHardMode
+        AppStateManager.shared.saveFocusState(FocusSessionState(
+            timerMinutes: timerMinutes, 
+            isTimerRunning: homeController.isTimerRunning, 
+            isHardMode: isHardMode, 
+            initialTimerMinutes: initialTimerMinutes))
+    }
+
     func startTimer() async {
-        guard !homeController.isTimerRunning else { return }
+        print("startTimer on focus controller")
+        //guard !homeController.isTimerRunning else { return }
         homeController.isTimerRunning = true
         isSessionRunning = true
         print(isTimerLimited)
@@ -89,6 +101,11 @@ class FocusController: ObservableObject {
                 print("Timer running: \(remainingSeconds) seconds")
                 remainingSeconds -= 1
                 self.timerMinutes = remainingSeconds
+                AppStateManager.shared.saveFocusState(FocusSessionState(
+                    timerMinutes: remainingSeconds, 
+                    isTimerRunning: true, 
+                    isHardMode: self.isHardMode,
+                    initialTimerMinutes: self.initialTimerMinutes))
 
                 if remainingSeconds <= 0 {
                     t.invalidate()
@@ -112,7 +129,6 @@ class FocusController: ObservableObject {
     }
 
     func stopTimer() {
-        homeController.isTimerRunning = false
         timer?.invalidate()
         timer = nil
         print("timer running", homeController.isTimerRunning)
@@ -146,6 +162,13 @@ class FocusController: ObservableObject {
             timerMinutes = 0
             initialTimerMinutes = 0
         }
+
+        AppStateManager.shared.saveFocusState(FocusSessionState(
+            timerMinutes: self.timerMinutes, 
+            isTimerRunning: false, 
+            isHardMode: self.isHardMode, 
+            initialTimerMinutes: self.initialTimerMinutes))
+
     }
 
     private func animateTimerReset() {
@@ -165,5 +188,15 @@ class FocusController: ObservableObject {
                 }
             }
         }
+    }
+
+    func sessionQuitDuringHardMode(timerMinutes: Int, initialTimerMinutes: Int, isHardMode: Bool, isTimerRunning: Bool) async {
+        print("sessionQuitDuringHardMode", timerMinutes, initialTimerMinutes, isHardMode, isTimerRunning, timerMinutes)
+        homeController.isTimerRunning = isTimerRunning
+        self.initialTimerMinutes = initialTimerMinutes
+        self.isHardMode = isHardMode
+        self.timerMinutes = timerMinutes
+        await startTimer()
+        
     }
 }

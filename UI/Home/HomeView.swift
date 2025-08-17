@@ -5,7 +5,6 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
     @EnvironmentObject var router: Router
     @EnvironmentObject var blockerManager: BlockerManager
-    @EnvironmentObject var focusManager: FocusManager
     
     @State private var scrollViewportHeight: CGFloat = 0
 

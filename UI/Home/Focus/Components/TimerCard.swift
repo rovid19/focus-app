@@ -2,10 +2,9 @@ import SwiftUI
 
 struct TimerCard: View {
     @ObservedObject var controller: FocusController
-    @EnvironmentObject var focusManager: FocusManager
 
     var body: some View {
-        let hideCTA = focusManager.isHardMode && controller.shouldHideControls
+        let hideCTA = controller.isHardMode && controller.shouldHideControls
 
         VStack(spacing: 0) {
             TitleSection(controller: controller)
