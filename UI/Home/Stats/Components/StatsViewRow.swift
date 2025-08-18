@@ -44,20 +44,17 @@ struct StatRowView: View {
                 if let date = stat.createdAt {
                     Text(date, style: .date)
                         .font(.custom("Inter-Regular", size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.6))
+
                 }
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text("\(stat.time_elapsed)")
+                Text("\(displayTime(stat.time_elapsed))")
                     .font(.custom("Inter-Regular", size: 16))
                     .foregroundColor(.blue)
-
-                Text("minutes")
-                    .font(.custom("Inter-Regular", size: 12))
-                    .foregroundColor(.secondary)
             }
 
             // Three-dot menu button
@@ -104,5 +101,29 @@ struct StatRowView: View {
         )
         .animation(.easeInOut(duration: 0.2), value: showingDeleteConfirmation)
         .animation(.easeInOut(duration: 0.2), value: isEditing)
+    }
+
+
+    private func getTimeUnit(_ seconds: Int) -> String {
+        if seconds < 3600 {
+            return "minutes"
+        } else {
+            return "hours"
+        }
+    }
+
+    private func displayTime(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        
+        if hours > 0 {
+            if minutes == 0 {
+                return "\(hours)h"
+            } else {
+                return "\(hours)h \(minutes)m"
+            }
+        } else {
+            return "\(minutes)m"
+        }
     }
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Stat: Codable {
+struct Stat: Codable, Identifiable, Equatable {
     let id: Int?
     let title: String
     let time_elapsed: Int
@@ -20,6 +20,10 @@ struct Stat: Codable {
 final class StatisticsManager: ObservableObject {
     static let shared = StatisticsManager()
     @Published var stats: [Stat] = []
+    @Published var totalSeconds: Int = 0
+    @Published var totalHours: String = ""
+    @Published var isLoading: Bool = true
+
     private(set) var userId: UUID?
 
     func addStat(title: String, time_elapsed: Int) async {
@@ -51,9 +55,10 @@ final class StatisticsManager: ObservableObject {
                 filters: ["user_id": userId]
             )
             print("stats", stats)
-
+            self.isLoading = false
             self.stats = stats
-
+            totalSeconds = getTotalSeconds()
+            totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
         } catch {
             print("Error getting stats from database: \(error)")
         }
@@ -71,7 +76,7 @@ final class StatisticsManager: ObservableObject {
     func renameStat(stat: Stat, newTitle: String) async {
         do {
             try await SupabaseDB.shared.update(table: "Stats", data: ["title": newTitle], filters: ["id": stat.id])
-    
+
         } catch {
             print("Error renaming stat in database: \(error)")
         }
@@ -79,5 +84,27 @@ final class StatisticsManager: ObservableObject {
 
     func updateUserId(userId: UUID?) {
         self.userId = userId
+    }
+
+    func formatSecondsToHoursAndMinutes(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+
+        if hours > 0 {
+            if minutes == 0 {
+                return hours == 1 ? "1 hour" : "\(hours) hours"
+            } else {
+                let minPart = minutes == 1 ? "1 minute" : "\(minutes) minutes"
+                return hours == 1
+                    ? "1 hour \(minPart)"
+                    : "\(hours) hours \(minPart)"
+            }
+        } else {
+            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        }
+    }
+
+    private func getTotalSeconds() -> Int {
+        return stats.reduce(0) { $0 + $1.time_elapsed }
     }
 }

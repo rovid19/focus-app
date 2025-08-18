@@ -8,6 +8,7 @@ class FocusController: ObservableObject {
             onInitialMinutesChanged()
         }
     }
+
     @Published var isTimerRunning: Bool = false
     @Published var timerMinutes: Int = 1800
     @Published var isSessionRunning: Bool = false
@@ -15,18 +16,17 @@ class FocusController: ObservableObject {
     private var timer: Timer?
     @Published var isTimerLimited: Bool = true
     @ObservedObject var homeController: HomeController
-     private var cancellables = Set<AnyCancellable>()
-    
+    private var cancellables = Set<AnyCancellable>()
+
     // Computed property that combines your conditional logic
     var shouldHideControls: Bool {
         return isSessionRunning // Change this single line to control all conditional rendering
     }
-    
+
     // Computed property for timer running state - centralized control point
     var isTimerActive: Bool {
         return isTimerRunning // Change this single line to control all timer-running conditional rendering
     }
-
 
     init(homeController: HomeController) {
         self.homeController = homeController
@@ -39,27 +39,27 @@ class FocusController: ObservableObject {
     }
 
     private func onInitialMinutesChanged() {
-        if initialTimerMinutes > 0 {
-            print("Timer duration is limited")
-            isTimerLimited = true
-        } else {
+        if initialTimerMinutes == 900 {
             print("Timer duration is unlimited")
             isTimerLimited = false
+        } else {
+            print("Timer duration is limited")
+            isTimerLimited = true
         }
     }
 
     func decreaseBy5() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes = max(0, timerMinutes - 60)
-        initialTimerMinutes = max(0, initialTimerMinutes - 60)
+        timerMinutes = max(900, timerMinutes - 60)
+        initialTimerMinutes = max(900, initialTimerMinutes - 60)
     }
 
     func decreaseBy15() {
         if isSessionRunning { return }
         print(initialTimerMinutes)
-        timerMinutes = max(0, timerMinutes - 900)
-        initialTimerMinutes = max(0, initialTimerMinutes - 900)
+        timerMinutes = max(900, timerMinutes - 900)
+        initialTimerMinutes = max(900, initialTimerMinutes - 900)
     }
 
     func increaseBy5() {
@@ -80,18 +80,18 @@ class FocusController: ObservableObject {
         print("toggleHardMode on focus controller")
         isHardMode = !isHardMode
         AppStateManager.shared.saveFocusState(FocusSessionState(
-            timerMinutes: timerMinutes, 
-            isTimerRunning: homeController.isTimerRunning, 
-            isHardMode: isHardMode, 
-            initialTimerMinutes: initialTimerMinutes))
+            timerMinutes: timerMinutes,
+            isTimerRunning: homeController.isTimerRunning,
+            isHardMode: isHardMode,
+            initialTimerMinutes: initialTimerMinutes
+        ))
     }
 
     func startTimer() async {
         print("startTimer on focus controller")
-        //guard !homeController.isTimerRunning else { return }
+        // guard !homeController.isTimerRunning else { return }
         homeController.isTimerRunning = true
         isSessionRunning = true
-        print(isTimerLimited)
         if isTimerLimited {
             print("timer is limited")
             // Countdown mode
@@ -102,10 +102,11 @@ class FocusController: ObservableObject {
                 remainingSeconds -= 1
                 self.timerMinutes = remainingSeconds
                 AppStateManager.shared.saveFocusState(FocusSessionState(
-                    timerMinutes: remainingSeconds, 
-                    isTimerRunning: true, 
+                    timerMinutes: remainingSeconds,
+                    isTimerRunning: true,
                     isHardMode: self.isHardMode,
-                    initialTimerMinutes: self.initialTimerMinutes))
+                    initialTimerMinutes: self.initialTimerMinutes
+                ))
 
                 if remainingSeconds <= 0 {
                     t.invalidate()
@@ -116,13 +117,14 @@ class FocusController: ObservableObject {
             }
         } else {
             // Unlimited mode (count up)
-            var elapsedSeconds = timerMinutes
-            timerMinutes = timerMinutes // start from zero
+            var elapsedSeconds = 0
+            timerMinutes = 0 // start from zero
 
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
                 guard let self = self else { t.invalidate(); return }
                 elapsedSeconds += 1
                 self.timerMinutes = elapsedSeconds
+                self.initialTimerMinutes = elapsedSeconds
                 print("Timer running: \(elapsedSeconds) seconds")
             }
         }
@@ -142,21 +144,9 @@ class FocusController: ObservableObject {
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
-
-        let minutesToSend = initialTimerMinutes == 0
-            ? timerMinutes
-            : (timerMinutes == 0 ? initialTimerMinutes : timerMinutes)
-
-        print("initialTimerMinutes", initialTimerMinutes)
-        print("timerMinutes", timerMinutes)
-        print("minutesToSend", minutesToSend)
-
-        Task {
-            await StatisticsManager.shared.addStat(
-                title: "Focus",
-                time_elapsed: minutesToSend
-            )
-        }
+        let secondsToSend = calculateTimeElapsed(seconds: timerMinutes)
+        print("secondsToSend", secondsToSend)
+        addStatToDatabase(title: "Focus", time_elapsed: secondsToSend)
 
         // Animate the reset by gradually changing the timer value
         if isTimerLimited {
@@ -167,11 +157,19 @@ class FocusController: ObservableObject {
         }
 
         AppStateManager.shared.saveFocusState(FocusSessionState(
-            timerMinutes: self.timerMinutes, 
-            isTimerRunning: false, 
-            isHardMode: self.isHardMode, 
-            initialTimerMinutes: self.initialTimerMinutes))
+            timerMinutes: timerMinutes,
+            isTimerRunning: false,
+            isHardMode: isHardMode,
+            initialTimerMinutes: initialTimerMinutes
+        ))
+    }
 
+    private func calculateTimeElapsed(seconds _: Int) -> Int {
+        if initialTimerMinutes > timerMinutes && timerMinutes > 0 {
+            return initialTimerMinutes - timerMinutes
+        } else {
+            return timerMinutes
+        }
     }
 
     private func animateTimerReset() {
@@ -200,6 +198,18 @@ class FocusController: ObservableObject {
         self.isHardMode = isHardMode
         self.timerMinutes = timerMinutes
         await startTimer()
-        
+    }
+
+    func addStatToDatabase(title: String, time_elapsed: Int) {
+        if time_elapsed < 5 {
+            print("time_elapsed is less than 15minutes  skipping stat")
+            return
+        }
+        Task {
+            await StatisticsManager.shared.addStat(
+                title: title,
+                time_elapsed: time_elapsed
+            )
+        }
     }
 }

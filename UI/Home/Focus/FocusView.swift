@@ -4,6 +4,8 @@ import SwiftUI
 
 struct FocusView: View {
     @ObservedObject var controller: FocusController
+    @State private var timerRowVisible = false
+    @State private var hardModeToggleVisible = false
 
     var body: some View {
         let isSessionRunning: Bool = controller.isSessionRunning
@@ -11,8 +13,15 @@ struct FocusView: View {
 
         VStack(spacing: 12) {
             TimerRow(controller: controller)
+                .opacity(timerRowVisible ? 1 : 0)
+                .offset(y: timerRowVisible ? 0 : 20)
+                .animation(.easeOut(duration: 0.6), value: timerRowVisible)
+
             if !controller.shouldHideControls {
                 HardModeToggle(controller: controller)
+                    .opacity(hardModeToggleVisible ? 1 : 0)
+                    .offset(y: hardModeToggleVisible ? 0 : 20)
+                    .animation(.easeOut(duration: 0.6), value: hardModeToggleVisible)
             }
         }
         .padding(.horizontal, !isSessionRunning && !isTimerRunning ? 24
@@ -22,7 +31,22 @@ struct FocusView: View {
         .animation(.easeInOut(duration: 0.4), value: controller.isTimerLimited)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
+        .onAppear {
+            animateElements()
+        }
         // .background(Color.blue)
+    }
+
+    private func animateElements() {
+        withAnimation(.easeOut(duration: 0.3)) {
+            timerRowVisible = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                hardModeToggleVisible = true
+            }
+        }
     }
 }
 

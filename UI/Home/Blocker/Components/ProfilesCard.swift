@@ -3,14 +3,17 @@ import SwiftUI
 // MARK: - Main ProfilesCard
 struct ProfilesCard: View {
     @ObservedObject var controller: BlockerController
+    @ObservedObject var blockerManager: BlockerManager
 
     var body: some View {
+        if !blockerManager.isRunning {
         HStack(spacing: 8) {
             ProfilesHeader()
             ProfilesPicker(controller: controller)
         }
-        .padding(12)
-        .defaultBackgroundStyle()
+            .padding(12)
+            .defaultBackgroundStyle()
+        }
     }
 }
 

@@ -14,6 +14,7 @@ struct focus_appApp: App {
     @StateObject private var supabaseAuth = SupabaseAuth.shared
     @StateObject private var router: Router
     @StateObject private var homeController: HomeController
+ 
 
     init() {
         let r = Router()
@@ -32,6 +33,7 @@ struct focus_appApp: App {
                 .environmentObject(supabaseAuth)
                 .environmentObject(router)
                 .environmentObject(BlockerManager.shared)
+                .environmentObject(StatisticsManager.shared)
                 .overlay(WindowCoordinator(router: router).allowsHitTesting(false))
                 .environment(\.font, .custom("Inter-Regular", size: 16))
                 .onAppear {

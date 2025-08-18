@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct SummaryStat: View {
-    let totalHours: Double
-    let totalMinutes: Int
+    @EnvironmentObject var statsManager: StatisticsManager
     
     var body: some View {
+        let totalSeconds = statsManager.totalSeconds
+        let totalHours = statsManager.totalHours
+
+
+
         HStack(spacing: 12) {
             // Left side: Icon + Title/Description
             HStack(spacing: 12) {
@@ -30,7 +34,7 @@ struct SummaryStat: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Total work today \(String(format: "%.1f", totalHours)) hours")
+                    Text("\(totalHours)")
                         .font(.custom("Inter-Regular", size: 22))
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
@@ -46,11 +50,7 @@ struct SummaryStat: View {
             
             // Right side: Time display
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(String(format: "%.1f", totalHours))h")
-                    .font(.custom("Inter-Regular", size: 18))
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color.blue.opacity(0.8))
-                
+             
                 Text("today")
                     .font(.custom("Inter-Regular", size: 11))
                     .foregroundColor(.white.opacity(0.6))

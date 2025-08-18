@@ -2,10 +2,10 @@ import SwiftUI
 
 struct HardModeCard: View {
     @ObservedObject var controller: BlockerController
-    @EnvironmentObject var blockerManager: BlockerManager
+    @ObservedObject var blockerManager: BlockerManager
 
     var body: some View {
-        HStack(spacing: 12) {
+        if !blockerManager.isRunning { HStack(spacing: 12) {
             HStack(spacing: 12) {
                 Image(systemName: "shield")
                     .font(.custom("Inter-Regular", size: 16))
@@ -28,5 +28,6 @@ struct HardModeCard: View {
         }
         .padding(12)
         .defaultBackgroundStyle()
+        }
     }
 }

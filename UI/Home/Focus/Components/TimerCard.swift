@@ -33,6 +33,9 @@ struct TimerCard: View {
 private struct TitleSection: View {
     @ObservedObject var controller: FocusController
 
+    @State private var pulseOpacity: Double = 1.0
+    @State private var delayedTimerLimited: Bool = true
+
     var body: some View {
         VStack(spacing: 0) {
             Text("FOCUS SESSION")
@@ -42,28 +45,33 @@ private struct TitleSection: View {
                 .padding(.bottom, 8)
                 .textCase(.uppercase)
 
-            if controller.isTimerLimited {
+            if delayedTimerLimited || (!delayedTimerLimited && controller.isSessionRunning) {
                 Text("\(controller.homeController.blockerController.formattedTimeLeft(from: controller.timerMinutes))")
                     .font(.custom("Inter_18pt-Medium", size: 48))
                     .foregroundColor(.white)
-            } else if !controller.isTimerLimited && controller.isSessionRunning {
-                Text("\(controller.homeController.blockerController.formattedTimeLeft(from: controller.timerMinutes))")
-                    .font(.custom("Inter_18pt-Medium", size: 48))
-                    .foregroundColor(.white)
-            } /* else {
-                 Text("No time limit")
-                     .font(.custom("Inter_18pt-Bold", size: 24))
-                     .foregroundColor(.white)
-                     .padding(.bottom, 4)
-             } */
-            else {
+                    .opacity(pulseOpacity)
+            } else {
                 Image(systemName: "infinity")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(Color.white.opacity(0.8))
                     .padding(.bottom, 8)
+                    .opacity(pulseOpacity)
             }
-            /* .opacity(!controller.isTimerLimited && controller.isSessionRunning ? 0 : 1)
-             .animation(.easeInOut(duration: 0.2), value: controller.isSessionRunning) */
+        }
+        .onAppear {
+            delayedTimerLimited = controller.isTimerLimited
+        }
+        .onChange(of: controller.isTimerLimited) { newValue in
+            // Step 1: instantly fade out
+            pulseOpacity = 0.0
+
+            // Step 2: after it's hidden, swap state + fade back in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                delayedTimerLimited = newValue
+                withAnimation(.easeInOut(duration: 0.8)) {
+                    pulseOpacity = 1.0
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var supabaseAuth: SupabaseAuth
     @EnvironmentObject var router: Router
     @EnvironmentObject var blockerManager: BlockerManager
+    @EnvironmentObject var statsManager: StatisticsManager
 
     @State private var scrollViewportHeight: CGFloat = 0
 
@@ -43,7 +44,6 @@ struct HomeView: View {
                 )
                 .scrollIndicators(.hidden)
                 .layoutPriority(1)
-                // .background(Color.red)
                 .clipped()
 
                 // BOTTOM
@@ -65,7 +65,9 @@ struct HomeView: View {
         .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
             router.changeView(view: .home)
-            print(router.currentView)
+            Task {
+                await statsManager.getStatsFromDatabase()
+            }
         }
     }
 }
@@ -107,7 +109,7 @@ private extension HomeView {
                 .padding(.vertical, 12)
                 .padding(.horizontal, 12)
             }
-            .background(cardBackground)
+            .defaultBackgroundStyle()
             .padding(.top, 12)
 
             // Border
@@ -156,11 +158,7 @@ private extension HomeView {
                     }
                     .buttonStyle(GlassButtonStyle())
                 }
-
-                // .padding(.vertical, 12)
-                // .padding(.horizontal, 12)
             }
-            // .background(cardBackground)
             .padding(.bottom, 12)
         }
     }
@@ -196,31 +194,6 @@ private extension HomeView {
         }
     }
 
-    // Reusable glass card background
-    var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color.white.opacity(0.05))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
-
-    // Whole-view glass background
-    var glassBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(Color.white.opacity(0.1))
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
-            )
-    }
-
-    // One tab button
     // One tab button
     func tabButton(title: String, systemImage: String, isActive: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -240,72 +213,5 @@ private extension HomeView {
             .cornerRadius(8)
         }
         .buttonStyle(TabButtonStyle(isActive: isActive)) // ← Change this line
-    }
-}
-
-// MARK: - Styles
-
-struct GlassButtonStyle: ButtonStyle {
-    @State private var isHovered = false
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.custom("Inter-Regular", size: 12))
-            .foregroundColor(.white)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isHovered ? Color.white.opacity(0.1) : Color.white.opacity(0.05))
-                    .animation(.easeInOut(duration: 0.2), value: isHovered)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    .opacity(isHovered ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.2), value: isHovered)
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
-            .onHover { hovering in
-                isHovered = hovering
-                if hovering {
-                    NSCursor.pointingHand.push()
-                } else {
-                    NSCursor.pop()
-                }
-            }
-    }
-}
-
-// MARK: - Styles
-
-struct TabButtonStyle: ButtonStyle {
-    let isActive: Bool
-    @State private var isHovered = false
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isHovered ? Color.white.opacity(0.1) : Color.clear)
-                    .animation(.easeInOut(duration: 0.2), value: isHovered)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    .opacity(isHovered ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.2), value: isHovered)
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-            .onHover { hovering in
-                isHovered = hovering
-                if hovering {
-                    NSCursor.pointingHand.push()
-                } else {
-                    NSCursor.pop()
-                }
-            }
     }
 }
