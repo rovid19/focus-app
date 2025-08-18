@@ -11,7 +11,7 @@ struct BlockerView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            BlockerCard(controller: controller)
+            BlockerCard(controller: controller, blockerManager: blockerManager)
             HardModeCard(controller: controller)
             DurationPickerCard(controller: controller)
             ProfilesCard(controller: controller)

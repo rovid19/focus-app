@@ -48,15 +48,8 @@ struct DurationPickerCard: View {
             }
         }
         .padding(12)
-        .background(cardBackground)
+        .defaultBackgroundStyle()
     }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color.white.opacity(0.05))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
+
+
 }

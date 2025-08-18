@@ -4,6 +4,7 @@ import SwiftUI
 
 struct BlockerCard: View {
     @ObservedObject var controller: BlockerController
+    @ObservedObject var blockerManager: BlockerManager
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,16 +15,8 @@ struct BlockerCard: View {
         }
         .padding(32)
          .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
-
-       
+        .defaultBackgroundStyle(cornerRadius: 16)
+        .overlay(TimerGlowBlocker(controller: blockerManager))
 
     }
 }
@@ -32,8 +25,8 @@ struct BlockerCard: View {
 
 struct BlockerTitle: View {
     var body: some View {
-        Text("BLOCKER")
-            .font(.custom("Inter-Regular", size: 12))
+        Text("BLOCKER SESSION")
+            .font(.custom("Inter-Regular", size: 8))
             .tracking(1.5)
             .foregroundColor(.white.opacity(0.55))
             .padding(.bottom, 8)

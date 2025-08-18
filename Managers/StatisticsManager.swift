@@ -1,16 +1,18 @@
 import SwiftUI
 
 struct Stat: Codable {
-    let id: Int? 
+    let id: Int?
     let title: String
     let time_elapsed: Int
     let userId: UUID
+    let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
         case title
         case time_elapsed
         case userId = "user_id"
+        case createdAt = "created_at"
     }
 }
 
@@ -26,7 +28,7 @@ final class StatisticsManager: ObservableObject {
             return
         }
 
-        let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, userId: uid)
+        let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, userId: uid, createdAt: nil)
         stats.append(stat)
         await addStatToDatabase(stat: stat)
     }

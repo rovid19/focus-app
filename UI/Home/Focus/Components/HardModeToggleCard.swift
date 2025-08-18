@@ -27,14 +27,7 @@ struct HardModeToggle: View {
                 .opacity(controller.isHardMode ? 0.6 : 1)
             }
             .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-            )
+            .defaultBackgroundStyle()
             .opacity(controller.shouldHideControls ? 0 : 1)
             .offset(y: controller.shouldHideControls ? 50 : 0) // slide downward
             .clipped()

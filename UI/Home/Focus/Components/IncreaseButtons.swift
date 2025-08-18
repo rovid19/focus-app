@@ -16,14 +16,7 @@ struct IncreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.05))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                )
+                .defaultBackgroundStyle()
             }
             .buttonStyle(TimerControlButtonStyle())
             .disabled(controller.isHardMode && controller.shouldHideControls)
@@ -37,14 +30,7 @@ struct IncreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.05))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                )
+                .defaultBackgroundStyle()
             }
             .buttonStyle(TimerControlButtonStyle())
             .disabled(controller.isHardMode && controller.shouldHideControls)
