@@ -54,10 +54,10 @@ final class StatisticsManager: ObservableObject {
                 columns: "*",
                 filters: ["user_id": userId]
             )
-            print("stats", stats)
-            self.isLoading = false
+            //print("stats", stats)
+            isLoading = false
             self.stats = stats
-            totalSeconds = getTotalSeconds()
+            totalSeconds = getDailySecondsSummary()
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
         } catch {
             print("Error getting stats from database: \(error)")
@@ -104,7 +104,18 @@ final class StatisticsManager: ObservableObject {
         }
     }
 
-    private func getTotalSeconds() -> Int {
-        return stats.reduce(0) { $0 + $1.time_elapsed }
+    private func getDailySecondsSummary() -> Int {
+        let totalSeconds = stats.reduce(0) { totalSum, stat in
+            guard let createdAt = stat.createdAt else { return totalSum }
+            let calendar = Calendar.current
+            let statDate = calendar.startOfDay(for: createdAt)
+            let today = calendar.startOfDay(for: Date())
+            if statDate == today {
+                return totalSum + stat.time_elapsed
+            }
+            return totalSum
+        }
+        
+        return totalSeconds
     }
 }

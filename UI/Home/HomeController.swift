@@ -4,15 +4,22 @@ import SwiftUI
 
 class HomeController: ObservableObject {
     @Published var isTimerRunning: Bool = false
-    @Published var whichView: String = "focus"
+    @Published var rebuildID = UUID()
+
+    @Published var whichView: String = "focus" {
+        didSet {
+            print("HomeView: \(whichView)")
+        }
+    }
 
     @ObservedObject var router: Router
-    //@ObservedObject var blockerManager: BlockerManager
+    // @ObservedObject var blockerManager: BlockerManager
 
-    init(router: Router/*, blockerManager: BlockerManager*/) {
+    init(router: Router /* , blockerManager: BlockerManager */ ) {
         self.router = router
-        //self.blockerManager = blockerManager
+        // self.blockerManager = blockerManager
         checkAuth()
+        print("HomeController init")
     }
 
     // Home View
@@ -21,7 +28,7 @@ class HomeController: ObservableObject {
     }
 
     // Focus View
-   lazy var focusController = FocusController(homeController: self)
+    lazy var focusController = FocusController(homeController: self)
     var focusView: FocusView {
         FocusView(controller: focusController)
     }
@@ -33,7 +40,7 @@ class HomeController: ObservableObject {
     }
 
     // Blocker View
-   lazy var blockerController = BlockerController(/*blockerManager: blockerManager*/)
+    lazy var blockerController = BlockerController( /* blockerManager: blockerManager */ )
     var blockerView: BlockerView {
         BlockerView(controller: blockerController)
     }
@@ -67,10 +74,15 @@ class HomeController: ObservableObject {
     }
 
     func switchView(to view: String) {
+        print("switchView", view)
         whichView = view
     }
 
     func openSettings() {
         router.changeView(view: .settings)
+    }
+
+    func rebuild() {
+        rebuildID = UUID()
     }
 }

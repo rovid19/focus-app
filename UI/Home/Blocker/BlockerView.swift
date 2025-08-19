@@ -10,7 +10,6 @@ struct BlockerView: View {
 
     init(controller: BlockerController) {
         self.controller = controller
-        print("BlockerView init")
     }
 
     var body: some View {
@@ -41,6 +40,7 @@ struct BlockerView: View {
         .frame(maxHeight: .infinity)
         .onAppear {
             animateElements()
+
         }
     }
 
