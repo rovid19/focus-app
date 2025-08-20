@@ -54,6 +54,7 @@ final class SupabaseAuth: ObservableObject {
                 user = session.user
             if let uid = user?.id {
                 StatisticsManager.shared.updateUserId(userId:uid)
+                await StatisticsManager.shared.getStatsFromDatabase()
             }
 
                 return true

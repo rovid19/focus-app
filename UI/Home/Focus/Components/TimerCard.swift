@@ -114,7 +114,7 @@ private struct TimerActionButton: View {
             .buttonStyle(PlainButtonStyle())
 
             if controller.isSessionRunning {
-                Button(action: controller.terminateSession) {
+                Button(action:{ Task { await controller.terminateSession}}) {
                     Label("Stop", systemImage: "stop")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.white)

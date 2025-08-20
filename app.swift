@@ -14,7 +14,6 @@ struct focus_appApp: App {
 
     init() {
         requestAccessibilityPermission()
-        //loadState()	
     }
 
     var body: some Scene {

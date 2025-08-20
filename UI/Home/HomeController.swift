@@ -5,12 +5,9 @@ import SwiftUI
 class HomeController: ObservableObject {
     @Published var isTimerRunning: Bool = false
     @Published var rebuildID = UUID()
+    @Published var changePadding: Bool = false
 
-    @Published var whichView: String = "focus" {
-        didSet {
-            print("HomeView: \(whichView)")
-        }
-    }
+    @Published var whichView: String = "focus"
 
     @ObservedObject var router: Router
     // @ObservedObject var blockerManager: BlockerManager
@@ -20,6 +17,7 @@ class HomeController: ObservableObject {
         // self.blockerManager = blockerManager
         checkAuth()
         print("HomeController init")
+      
     }
 
     // Home View

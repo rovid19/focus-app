@@ -30,7 +30,7 @@ struct StatsView: View {
                             .padding(.leading, 4)
 
                         ScrollView {
-                            LazyVStack(spacing: 12) {
+                            LazyVStack(spacing: 8) {
                                 ForEach(statsManager.stats.reversed(), id: \.id) { stat in
                                     StatRowView(stat: stat, statsManager: statsManager)
                                 }
@@ -44,16 +44,16 @@ struct StatsView: View {
                 }
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
+        //.padding(.horizontal, 24)
+        //.padding(.vertical, 12)
         .onAppear {
             animateElements()
-              Task {
-                await statsManager.getStatsFromDatabase()
-            }
+           
         }
         .onChange(of: statsManager.stats) { newStats in
-            animateElements()
+            Task { @MainActor in
+                animateElements()
+            }
         }
     }
 

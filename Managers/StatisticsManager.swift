@@ -34,6 +34,7 @@ final class StatisticsManager: ObservableObject {
 
         let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, userId: uid, createdAt: nil)
         stats.append(stat)
+        print("stats", stat)
         await addStatToDatabase(stat: stat)
     }
 
@@ -41,6 +42,7 @@ final class StatisticsManager: ObservableObject {
         do {
             print("Adding stat to database: \(stat)")
             try await SupabaseDB.shared.insert(table: "Stats", data: stat)
+            await getStatsFromDatabase()
         } catch {
             print("Error adding stat to database: \(error)")
         }
@@ -56,6 +58,7 @@ final class StatisticsManager: ObservableObject {
             )
             //print("stats", stats)
             isLoading = false
+            print("stats", stats)
             self.stats = stats
             totalSeconds = getDailySecondsSummary()
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)

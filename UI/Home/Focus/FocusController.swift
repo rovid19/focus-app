@@ -36,6 +36,24 @@ class FocusController: ObservableObject {
             .receive(on: RunLoop.main)
             .assign(to: \.isTimerRunning, on: self)
             .store(in: &cancellables)
+
+        // change homeController.changePadding when both are true
+        Publishers.CombineLatest($isTimerRunning, $isSessionRunning)
+            .map { $0 && $1 }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] bothTrue in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    if bothTrue {
+                        print("changePadding true")
+                        self.homeController.changePadding = true
+                    } else {
+                        self.homeController.changePadding = false
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     private func onInitialMinutesChanged() {
@@ -112,7 +130,9 @@ class FocusController: ObservableObject {
                     t.invalidate()
                     self.homeController.isTimerRunning = false
                     NSSound(named: "Glass")?.play()
-                    self.terminateSession()
+                    Task {
+                          await self.terminateSession()
+                      }
                 }
             }
         } else {
@@ -140,13 +160,13 @@ class FocusController: ObservableObject {
         print("session running", isSessionRunning)
     }
 
-    func terminateSession() {
+    func terminateSession() async {
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
         let secondsToSend = calculateTimeElapsed(seconds: timerMinutes)
         print("secondsToSend", secondsToSend)
-        addStatToDatabase(title: "Focus", time_elapsed: secondsToSend)
+        await addStatToDatabase(title: "Focus", time_elapsed: secondsToSend)
 
         // Animate the reset by gradually changing the timer value
         if isTimerLimited {
@@ -200,16 +220,12 @@ class FocusController: ObservableObject {
         await startTimer()
     }
 
-    func addStatToDatabase(title: String, time_elapsed: Int) {
+    func addStatToDatabase(title: String, time_elapsed: Int) async {
         if time_elapsed < 5 {
             print("time_elapsed is less than 15minutes  skipping stat")
             return
         }
-        Task {
-            await StatisticsManager.shared.addStat(
-                title: title,
-                time_elapsed: time_elapsed
-            )
-        }
+        print("addStatToDatabase", title, time_elapsed)
+        await StatisticsManager.shared.addStat(title: title, time_elapsed: time_elapsed)
     }
 }

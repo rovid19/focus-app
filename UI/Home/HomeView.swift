@@ -42,6 +42,8 @@ struct HomeView: View {
                             }
                     }
                 )
+                .padding(.horizontal, !controller.changePadding ? 24 : 0)
+                .padding(.vertical, !controller.changePadding ? 12 : 0)
                 .scrollIndicators(.hidden)
                 .layoutPriority(1)
                 .clipped()
@@ -64,10 +66,9 @@ struct HomeView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
-             router.changeView(view: .home)
-                    Task {
-                        await StatisticsManager.shared.getStatsFromDatabase()
-                    }
+            Task { @MainActor in
+                router.changeView(view: .home)
+            }
         }
     }
 }
@@ -184,16 +185,12 @@ private extension HomeView {
     // Switch between Focus / Stats (type-erased to avoid compiler blow-up)
     var contentArea: AnyView {
         if controller.whichView == "focus" {
-            print("focus contentArea")
             return AnyView(controller.focusView)
         } else if controller.whichView == "stats" {
-            print("stats contentArea")
             return AnyView(controller.statsView)
         } else if controller.whichView == "blocker" {
-            print("blocker contentArea")
             return AnyView(controller.blockerView)
         } else {
-            print("empty contentArea")
             return AnyView(EmptyView())
         }
     }

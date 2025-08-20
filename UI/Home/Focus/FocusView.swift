@@ -24,10 +24,10 @@ struct FocusView: View {
                     .animation(.easeOut(duration: 0.6), value: hardModeToggleVisible)
             }
         }
-        .padding(.horizontal, !isSessionRunning && !isTimerRunning ? 24
+        /*.padding(.horizontal, !isSessionRunning && !isTimerRunning ? 24
             : (isSessionRunning && !isTimerRunning ? 24 : 0))
-        .padding(.vertical, !isSessionRunning && !isTimerRunning ? 12
-            : (isSessionRunning && !isTimerRunning ? 12 : 0))
+        .padding(.horizontal, isSessionRunning && !isTimerRunning ? 12
+            : (isSessionRunning && !isTimerRunning ? 12 : 0))*/
         .animation(.easeInOut(duration: 0.4), value: controller.isTimerLimited)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)

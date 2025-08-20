@@ -11,14 +11,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var popover: NSPopover!
     var homeController: HomeController!
-     var router: Router = Router()
+    var router: Router = .init()
     var hotkeyManager: HotkeyManager!
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         // Init shared controllers
-
         homeController = HomeController(router: router)
 
         // Setup status bar item
@@ -40,13 +39,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Register fonts if needed
         registerFonts()
 
-       self.loadState()
-
+        loadState()
     }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if homeController.focusController.isTimerRunning {
+        Task.detached(priority: .high) {
+            await self.homeController.focusController.terminateSession()
+                NSApp.reply(toApplicationShouldTerminate: true)
+            }
+            return .terminateLater
+        } else {
+            return .terminateNow
+        }
+    }
+
+
+
 
     // MARK: - Helpers
 
-     func makeHostingController() -> NSHostingController<AnyView> {
+    func makeHostingController() -> NSHostingController<AnyView> {
         let root = AnyView(
             HomeView(controller: homeController)
                 .environmentObject(SupabaseAuth.shared)
@@ -57,8 +70,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         return NSHostingController(rootView: root)
     }
-
-
 
     @objc func togglePopover(_ sender: AnyObject?) {
         if popover.isShown {
@@ -120,19 +131,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
                 SupabaseAuth.shared.user = session.user
                 print("Logged in \(SupabaseAuth.shared.user)")
+
             } catch {
                 NSLog("[focus-app] Exchange failed: \(error)")
             }
         }
     }
-     private func loadState() {
+
+    private func loadState() {
         AppStateManager.shared.handleBlockerState(homeController: homeController)
         AppStateManager.shared.handleFocusState(homeController: homeController)
     }
 }
 
-
 // MARK: - Popup control
+
 extension AppDelegate {
     func activateMenuBar() {
         if let button = statusItem.button {

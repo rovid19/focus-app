@@ -34,8 +34,8 @@ struct BlockerView: View {
                 .offset(y: profilesCardVisible ? 0 : 20)
                 .animation(.easeOut(duration: 0.6), value: profilesCardVisible)
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
+        //.padding(.horizontal, 24)
+        //.padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
         .onAppear {
