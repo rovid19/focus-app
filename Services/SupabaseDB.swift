@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import Supabase
+
 typealias FilterValue = any PostgrestFilterValue
 
 class SupabaseDB {
@@ -18,13 +19,12 @@ class SupabaseDB {
 
         client = SupabaseClient(supabaseURL: supabaseUrl, supabaseKey: supabaseKey)
     }
-    
+
     func getClient() -> SupabaseClient {
         return client
     }
-    
-    // Basic database operations
 
+    // Basic database operations
 
     func select<T: Decodable>(
         table: String,
@@ -36,25 +36,25 @@ class SupabaseDB {
             query = query.eq(key, value: value)
         }
 
-       return try await query.execute().value
+        return try await query.execute().value
     }
 
-    
     func insert<T: Codable>(table: String, data: T) async throws {
         try await client.from(table).insert(data).execute().value
     }
-    
+
     func update<U: Encodable>(
         table: String,
         data: U,
         filters: [String: FilterValue]
     ) async throws {
         var q = try await client.from(table).update(data)
-        for (k, v) in filters { q = q.eq(k, value: v) }
+        for (k, v) in filters {
+            q = q.eq(k, value: v)
+        }
         _ = try await q.execute()
     }
 
-    
     func delete<T: Decodable>(
         table: String,
         filters: [String: FilterValue]
@@ -64,5 +64,23 @@ class SupabaseDB {
             query = query.eq(key, value: value)
         }
         return try await query.select().execute().value
+    }
+
+    func upsert<T: Encodable>(
+        table: String,
+        data: T,
+        onConflict: String? = nil
+    ) async throws {
+        if let conflict = onConflict {
+            try await client
+                .from(table)
+                .upsert(data, onConflict: conflict)
+                .execute()
+        } else {
+            try await client
+                .from(table)
+                .upsert(data)
+                .execute()
+        }
     }
 }

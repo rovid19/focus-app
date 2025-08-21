@@ -59,10 +59,7 @@ struct HomeView: View {
             }
         }
         .frame(width: 460, height: 420) // outer popup frame stays fixed
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.1))
-        )
+        .glassWindow()
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
@@ -110,7 +107,7 @@ private extension HomeView {
                 .padding(.vertical, 12)
                 .padding(.horizontal, 12)
             }
-            .defaultBackgroundStyle()
+            .glassBackground()
             .padding(.top, 12)
 
             // Border
@@ -143,7 +140,7 @@ private extension HomeView {
                             Text("Logout")
                         }
                     }
-                    .buttonStyle(GlassButtonStyle())
+                    .glassy()
 
                     Spacer()
 
@@ -157,7 +154,7 @@ private extension HomeView {
                             Text("Settings")
                         }
                     }
-                    .buttonStyle(GlassButtonStyle())
+                    .glassy()
                 }
             }
             .padding(.bottom, 12)
@@ -198,21 +195,67 @@ private extension HomeView {
     // One tab button
     func tabButton(title: String, systemImage: String, isActive: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: systemImage)
-                    .font(.custom("Inter-Regular", size: 16))
-                    .foregroundColor(isActive ? .white : .white.opacity(0.8))
-
-                Text(title)
-                    .font(.custom("Inter-Regular", size: 14))
-                    .tracking(-0.5)
-                    .foregroundColor(isActive ? .white : .white.opacity(0.6))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isActive ? Color.white.opacity(0.1) : Color.clear)
-            .cornerRadius(8)
+            TabButtonContent(title: title, systemImage: systemImage, isActive: isActive)
         }
-        .buttonStyle(TabButtonStyle(isActive: isActive)) // ← Change this line
+        .buttonStyle(GlassTabButtonStyle(isActive: isActive))
+    }
+}
+
+// MARK: - Tab Button Content
+struct TabButtonContent: View {
+    let title: String
+    let systemImage: String
+    let isActive: Bool
+    @Environment(\.isHovered) var isHovered
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.custom("Inter-Regular", size: 16))
+                .foregroundColor(foregroundColor)
+
+            Text(title)
+                .font(.custom("Inter-Regular", size: 14))
+                .tracking(-0.5)
+                .foregroundColor(foregroundColor)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(backgroundColor)
+        .overlay(borderOverlay)
+        .cornerRadius(8)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .animation(.easeInOut(duration: 0.2), value: isActive)
+    }
+    
+    private var foregroundColor: Color {
+        if isActive {
+            return .white
+        } else if isHovered {
+            return .white.opacity(0.8)
+        } else {
+            return .white.opacity(0.4)
+        }
+    }
+    
+    private var backgroundColor: Color {
+        if isActive {
+            return Color.white.opacity(0.05)
+        } else if isHovered {
+            return Color.white.opacity(0.02)
+        } else {
+            return Color.clear
+        }
+    }
+    
+    @ViewBuilder
+    private var borderOverlay: some View {
+        if isActive {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        } else if isHovered {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        }
     }
 }

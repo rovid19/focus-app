@@ -11,15 +11,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var popover: NSPopover!
     var homeController: HomeController!
+    var settingsController: SettingsController!
     var router: Router = .init()
     var hotkeyManager: HotkeyManager!
+    private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         // Init shared controllers
-        homeController = HomeController(router: router)
-
+        homeController = HomeController(router: router, appDelegate: self)
+        hotkeyManager = HotkeyManager(homeController: homeController, appDelegate: self)
+        settingsController = SettingsController(homeController: homeController, hotkeyManager: hotkeyManager)
         // Setup status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
@@ -28,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(togglePopover(_:))
         }
 
-        hotkeyManager = HotkeyManager(homeController: homeController, appDelegate: self)
+        
 
         // Setup popover
         popover = NSPopover()
@@ -36,16 +39,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentSize = NSSize(width: 460, height: 420)
         popover.contentViewController = makeHostingController()
 
-        // Register fonts if needed
+        // Register fonts
         registerFonts()
-
         loadState()
     }
 
-    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+    func applicationShouldTerminate(_: NSApplication) -> NSApplication.TerminateReply {
         if homeController.focusController.isTimerRunning {
-        Task.detached(priority: .high) {
-            await self.homeController.focusController.terminateSession()
+            Task.detached(priority: .high) {
+                await self.homeController.focusController.terminateSession()
                 NSApp.reply(toApplicationShouldTerminate: true)
             }
             return .terminateLater
@@ -53,9 +55,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return .terminateNow
         }
     }
-
-
-
 
     // MARK: - Helpers
 
@@ -79,6 +78,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.contentViewController = makeHostingController()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+        }
+    }
+
+    func openSettingsWindow() {
+        // Build hosting view
+        let hosting = NSHostingView(
+            rootView: SettingsView(controller: settingsController)
+                .environmentObject(SupabaseAuth.shared)
+                .environmentObject(router)
+                .environment(\.font, .custom("Inter-Regular", size: 16))
+                .fixedSize() // 🔹 makes SwiftUI report natural size
+        )
+
+        // Ask SwiftUI view for its intrinsic size
+        let size = hosting.intrinsicContentSize
+
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: size),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true 
+        window.title = "Settings"
+        window.contentView = hosting
+        window.isOpaque = false
+        window.backgroundColor = .clear
+
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+
+        NSApp.activate(ignoringOtherApps: true)
+
+        // keep reference until closed
+        window.isReleasedWhenClosed = false
+        settingsWindow = window
+
+        // cleanup when closed
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            self?.settingsWindow = nil
         }
     }
 

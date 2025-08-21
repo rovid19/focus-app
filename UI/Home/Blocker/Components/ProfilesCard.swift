@@ -12,7 +12,7 @@ struct ProfilesCard: View {
             ProfilesPicker(controller: controller)
         }
             .padding(12)
-            .defaultBackgroundStyle()
+            .glassBackground()
         }
     }
 }

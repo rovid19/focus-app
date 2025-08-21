@@ -3,17 +3,18 @@ import Combine
 import SwiftUI
 
 class HomeController: ObservableObject {
+    var appDelegate: AppDelegate
     @Published var isTimerRunning: Bool = false
     @Published var rebuildID = UUID()
     @Published var changePadding: Bool = false
-
     @Published var whichView: String = "focus"
 
     @ObservedObject var router: Router
     // @ObservedObject var blockerManager: BlockerManager
 
-    init(router: Router /* , blockerManager: BlockerManager */ ) {
+    init(router: Router, appDelegate: AppDelegate /* , blockerManager: BlockerManager */ ) {
         self.router = router
+        self.appDelegate = appDelegate
         // self.blockerManager = blockerManager
         checkAuth()
         print("HomeController init")
@@ -77,7 +78,7 @@ class HomeController: ObservableObject {
     }
 
     func openSettings() {
-        router.changeView(view: .settings)
+        appDelegate.openSettingsWindow()
     }
 
     func rebuild() {

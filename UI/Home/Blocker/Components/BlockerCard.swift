@@ -15,7 +15,7 @@ struct BlockerCard: View {
         .padding(32)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
-        .defaultBackgroundStyle(cornerRadius: 16)
+        .glassBackground(cornerRadius: 16)
         .overlay(TimerGlowBlocker(controller: blockerManager))
         .animation(.spring(response: 0.8, dampingFraction: 1), value: blockerManager.isRunning)
     }
@@ -109,8 +109,8 @@ struct BlockerActionButton: View {
                 Text(delayedIsRunning ? "Stop" : "Start Blocker")
                     .font(.custom("Inter-Regular", size: 13))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            /*  .padding(.horizontal, 14)
+            .padding(.vertical, 8)*≈
             .background(
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.white.opacity(0.1))
@@ -118,10 +118,10 @@ struct BlockerActionButton: View {
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
-            )
+            )*/
             .opacity(pulseOpacity)
         }
-        .buttonStyle(PlainButtonStyle())
+        .glassy()
         .onAppear {
             delayedIsRunning = blockerManager.isRunning
         }

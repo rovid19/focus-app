@@ -2,79 +2,67 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var controller: SettingsController
+    @EnvironmentObject var router: Router
 
     init(controller: SettingsController) {
         _controller = StateObject(wrappedValue: controller)
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
+        VStack(spacing: 0) {
+            // 👇 Your custom mini bar under native titlebar
+           /* CustomTitlebar()
+                .frame(height: 32)
+*/
+            // 👇 Header row
             HStack {
                 Text("Settings")
-                    .font(.custom("Inter-Regular", size: 16))
-                
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white)
                 Spacer()
             }
-            .padding(.horizontal)
-            
-            // Websites Blocker Section
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "globe")
-                        .font(.custom("Inter-Regular", size: 16))
-                        .foregroundColor(.blue)
-                    
-                    Text("Websites Blocker")
-                        .font(.custom("Inter-Regular", size: 16))
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Block distracting websites during focus sessions")
-                        .font(.custom("Inter-Regular", size: 12))
-                        .foregroundColor(.secondary)
-                    
-                    Button("Configure Websites") {
-                        // TODO: Open websites configuration
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(.leading, 32)
+            .padding(.horizontal, 12)
+            .frame(height: 36)
+            .background(.regularMaterial)
+
+            .overlay(Divider(), alignment: .bottom)
+
+            // 👇 Sidebar + content
+            HStack(spacing: 0) {
+                SettingsSidebar(controller: controller)
+                    .frame(width: 240)
+                    .background(.ultraThinMaterial)
+
+                SettingsContent(controller: controller)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.regularMaterial)
             }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(12)
-            
-            // Apps Blocker Section
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "app.badge")
-                        .font(.custom("Inter-Regular", size: 16))
-                        .foregroundColor(.green)
-                    
-                    Text("Apps Blocker")
-                        .font(.custom("Inter-Regular", size: 16))
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Block distracting applications during focus sessions")
-                        .font(.custom("Inter-Regular", size: 12))
-                        .foregroundColor(.secondary)
-                    
-                    Button("Configure Apps") {
-                        // TODO: Open apps configuration
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(.leading, 32)
-            }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(12)
-            
-            Spacer()
+            .frame(minWidth: 600, minHeight: 400)
         }
-        .padding()
-        .frame(minWidth: 400, minHeight: 500)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
+        .onAppear { controller.loadSettings() }
     }
 }
+
+/*
+
+struct CustomTitlebar: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Circle().fill(Color.red).frame(width: 12, height: 12)
+            Circle().fill(Color.yellow).frame(width: 12, height: 12)
+            Circle().fill(Color.green).frame(width: 12, height: 12)
+        }
+        .padding(.leading, 12)
+        .frame(height: 28)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .overlay(Divider(), alignment: .bottom)
+    }
+}
+*/

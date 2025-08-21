@@ -14,20 +14,30 @@ class HotkeyManager {
     init(homeController: HomeController, appDelegate: AppDelegate) {
         self.homeController = homeController
         self.appDelegate = appDelegate
-        registerHotkey()
+        registerHotkey(
+            focus: (.a, .option),
+            blocker: (.c, .option),
+            close: (.escape, .option),
+            quitHardMode: (.k, .option)
+        )
     }
 
-    private func registerHotkey() {
-        // ⌥A → open Focus view
-        openFocusSession = HotKey(key: .a, modifiers: [.option])
+    func registerHotkey(
+        focus: (key: Key, modifiers: NSEvent.ModifierFlags),
+        blocker: (key: Key, modifiers: NSEvent.ModifierFlags),
+        close: (key: Key, modifiers: NSEvent.ModifierFlags),
+        quitHardMode: (key: Key, modifiers: NSEvent.ModifierFlags)
+    ) {
+        // Focus
+        openFocusSession = HotKey(key: focus.key, modifiers: focus.modifiers)
         openFocusSession?.keyDownHandler = { [weak self] in
             guard let self else { return }
             self.appDelegate.activateMenuBar()
             self.homeController.switchView(to: "focus")
         }
 
-        // ⌥C → open Blocker view
-        openBlockerSession = HotKey(key: .c, modifiers: [.option])
+        // Blocker
+        openBlockerSession = HotKey(key: blocker.key, modifiers: blocker.modifiers)
         openBlockerSession?.keyDownHandler = { [weak self] in
             guard let self else { return }
             if !self.homeController.focusController.isTimerRunning {
@@ -36,15 +46,15 @@ class HotkeyManager {
             }
         }
 
-        // ⌥Esc → close popup
-        closeMenuBar = HotKey(key: .escape, modifiers: [.option])
+        // Close
+        closeMenuBar = HotKey(key: close.key, modifiers: close.modifiers)
         closeMenuBar?.keyDownHandler = { [weak self] in
             self?.appDelegate.deactivateMenuBar()
         }
 
-        // ⌥K → quit HardMode
-        quitHardMode = HotKey(key: .k, modifiers: [.option])
-        quitHardMode?.keyDownHandler = { [weak self] in
+        // Quit HardMode
+        self.quitHardMode = HotKey(key: quitHardMode.key, modifiers: quitHardMode.modifiers)
+        self.quitHardMode?.keyDownHandler = { [weak self] in
             self?.killHardmode()
         }
     }

@@ -67,7 +67,7 @@ private struct TimerRow: View {
 
 // MARK: - Styles
 
-struct TimerControlButtonStyle: ButtonStyle {
+struct ButtonHoverEffect: ButtonStyle {
     @State private var isHovered = false
 
     func makeBody(configuration: Configuration) -> some View {
@@ -116,6 +116,6 @@ struct CustomToggleStyle: ToggleStyle {
                 }
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .glassy()
     }
 }

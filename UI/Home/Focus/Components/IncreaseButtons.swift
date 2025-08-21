@@ -16,11 +16,8 @@ struct IncreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .defaultBackgroundStyle()
             }
-            .buttonStyle(TimerControlButtonStyle())
-            .disabled(controller.isHardMode && controller.shouldHideControls)
-            .opacity((controller.isHardMode && controller.shouldHideControls) ? 0.5 : 1.0)
+            .glassy(paddingVertical: 0, paddingHorizontal: 0)
 
             // +5
             Button(action: { controller.increaseBy5() }) {
@@ -30,11 +27,8 @@ struct IncreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .defaultBackgroundStyle()
             }
-            .buttonStyle(TimerControlButtonStyle())
-            .disabled(controller.isHardMode && controller.shouldHideControls)
-            .opacity((controller.isHardMode && controller.shouldHideControls) ? 0.5 : 1.0)
+            .glassy(paddingVertical: 0, paddingHorizontal: 0)
         }
         .frame(width: controller.shouldHideControls ? 0 : 44, height: 44 * 2 + 8, alignment: .trailing) // fixed height
         .clipped()

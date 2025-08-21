@@ -17,9 +17,8 @@ struct DecreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .defaultBackgroundStyle()
             }
-            .buttonStyle(TimerControlButtonStyle())
+            .glassy(paddingVertical: 0, paddingHorizontal: 0)
 
             // -5
             Button(action: { controller.decreaseBy5() }) {
@@ -29,9 +28,8 @@ struct DecreaseButtons: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .frame(width: 44, height: 44)
-                .defaultBackgroundStyle()
             }
-            .buttonStyle(TimerControlButtonStyle())
+            .glassy(paddingVertical: 0, paddingHorizontal: 0)
         }
         .frame(width: controller.shouldHideControls ? 0 : 44, height: 44 * 2 + 8) // lock container height
         .opacity(controller.shouldHideControls ? 0 : 1)

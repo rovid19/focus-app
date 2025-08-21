@@ -50,7 +50,7 @@ struct DurationPickerCard: View {
                 }
             }
             .padding(12)
-            .defaultBackgroundStyle()
+            .glassBackground(cornerRadius: 16)
         }
     }
 }

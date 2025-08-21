@@ -28,55 +28,48 @@ struct ConfirmationDialog: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Title
+        VStack(spacing: 12) {
             Text(title)
                 .font(.headline)
-                .fontWeight(.semibold)
+                .foregroundColor(.white)
                 .multilineTextAlignment(.center)
             
-            // Message
             Text(message)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
             
-            // Buttons
             HStack(spacing: 12) {
-                Button(action: cancelAction) {
-                    Text(cancelText)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(Color(NSColor.controlBackgroundColor))
-                        .cornerRadius(6)
-                }
-                .buttonStyle(PlainButtonStyle())
+                Button(cancelText, action: cancelAction)
+                    .buttonStyle(DialogButtonStyle(color: .gray.opacity(0.3)))
                 
-                Button(action: confirmAction) {
-                    Text(confirmText)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(isDestructive ? Color.red : Color.blue)
-                        .cornerRadius(6)
-                }
-                .buttonStyle(PlainButtonStyle())
+                Button(confirmText, action: confirmAction)
+                    .buttonStyle(DialogButtonStyle(color: isDestructive ? .red.opacity(0.8) : .blue.opacity(0.8)))
             }
         }
-        .padding(20)
-        .background(Color(NSColor.windowBackgroundColor))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .padding()
+        .glassBackground()
     }
 }
 
-// Convenience initializer for common use cases
+struct DialogButtonStyle: ButtonStyle {
+    let color: Color
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.bold())
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(color)
+            )
+            .opacity(configuration.isPressed ? 0.7 : 1)
+    }
+}
+
+// Convenience initializer
 extension ConfirmationDialog {
     static func delete(
         itemName: String,
@@ -85,7 +78,7 @@ extension ConfirmationDialog {
     ) -> ConfirmationDialog {
         ConfirmationDialog(
             title: "Delete \(itemName)",
-            message: "Are you sure you want to delete this \(itemName)? This action cannot be undone.",
+            message: "Are you sure you want to delete this \(itemName)?",
             confirmText: "Delete",
             cancelText: "Cancel",
             isDestructive: true,

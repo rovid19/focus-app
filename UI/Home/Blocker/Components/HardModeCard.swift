@@ -27,7 +27,7 @@ struct HardModeCard: View {
             .opacity(blockerManager.hardLocked ? 0.6 : 1)
         }
         .padding(12)
-        .defaultBackgroundStyle()
+        .glassBackground()
         }
     }
 }

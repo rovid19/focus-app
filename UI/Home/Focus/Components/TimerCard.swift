@@ -22,7 +22,7 @@ struct TimerCard: View {
         .frame(maxHeight: .infinity)
         .layoutPriority(1)
         .padding(32)
-        .defaultBackgroundStyle(cornerRadius: 16)
+        .glassBackground(cornerRadius: 16)
         .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isTimerLimited)
         .overlay(TimerGlow(controller: controller))
     }
@@ -100,36 +100,36 @@ private struct TimerActionButton: View {
                 Label(isSessionRunning && isTimerRunning ? "Pause" : isSessionRunning && !isTimerRunning ? "Resume" : "Start", systemImage: isSessionRunning ? "pause" : "play")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(
+                    /*.padding(.horizontal, 12)
+                    .padding(.vertical, 8)*/
+                  /*  .background(
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.white.opacity(0.1))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color.white.opacity(0.15), lineWidth: 1)
                             )
-                    )
+                    )*/
             }
-            .buttonStyle(PlainButtonStyle())
+            .glassy()
 
             if controller.isSessionRunning {
                 Button(action:{ Task { await controller.terminateSession}}) {
                     Label("Stop", systemImage: "stop")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(
+                        /*.padding(.horizontal, 12)
+                        .padding(.vertical, 8)*/
+                       /* .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(Color.white.opacity(0.1))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.white.opacity(0.15), lineWidth: 1)
                                 )
-                        )
+                        )*/
                 }
-                .buttonStyle(PlainButtonStyle())
+                .glassy()
             }
         }
     }

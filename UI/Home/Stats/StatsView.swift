@@ -84,6 +84,6 @@ private struct EmptyStatsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
-        .defaultBackgroundStyle()
+        .glassBackground()
     }
 }

@@ -1,12 +1,21 @@
 import AppKit
 import SwiftUI
 
+struct BlockRow: Encodable {
+    let user_id: String
+    let BlockedWebsites: [String]
+    let BlockedApps: [String]
+}
+
+
+
 class BlockerManager: ObservableObject {
     static let shared = BlockerManager()
     var blockedApps: [String] = ["com.apple.Safari"] // Example bundle ID
     @Published var isRunning: Bool = false
     @Published var hardLocked: Bool = false
     @Published var remainingTime: Int = 3600
+    @Published var blockedWebsites: [String] = []
     var resumeTimer: Bool = false
     private var monitorObserver: Any?
 
@@ -42,6 +51,31 @@ class BlockerManager: ObservableObject {
             }
             // Kill Activity Monitor if already running
             killBlockedApps()
+        }
+    }
+
+    func saveBlockToDatabase() async {
+        guard let user = await SupabaseAuth.shared.user else {
+            print("No logged-in user")
+            return
+        }
+
+        let row = BlockRow(
+            user_id: user.id.uuidString, // 👈 convert UUID → String
+            BlockedWebsites: blockedWebsites,
+            BlockedApps: blockedApps
+        )
+
+        do {
+            try await SupabaseDB.shared.getClient()
+                .from("Blocker")
+                .upsert(row, onConflict: "user_id")
+                .execute()
+
+            print("Blocked domains saved to database: \(blockedWebsites)")
+            print("Blocked apps saved to database: \(blockedApps)")
+        } catch {
+            print("Error saving blocked domains to database: \(error)")
         }
     }
 
@@ -88,7 +122,8 @@ class BlockerManager: ObservableObject {
     }
 
     func startWebsiteBlocker() {
-        WebsiteBlocker.shared.block(domains: ["google.com", "facebook.com", "instagram.com"])
+        print("Starting website blocker with domains: \(blockedWebsites)")
+        WebsiteBlocker.shared.block(domains: blockedWebsites)
     }
 
     func stopWebsiteBlocker() {
@@ -121,7 +156,4 @@ class BlockerManager: ObservableObject {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8) ?? ""
     }
-
-  
 }
-

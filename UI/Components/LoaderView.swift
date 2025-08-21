@@ -27,7 +27,7 @@ struct LoaderView: View {
                 .foregroundColor(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .defaultBackgroundStyle()
+        .glassBackground()
         .onAppear {
             isAnimating = true
         }
@@ -64,7 +64,7 @@ struct SpinnerLoader: View {
                 .foregroundColor(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .defaultBackgroundStyle()
+        .glassBackground()
         .onAppear {
             isRotating = true
         }
@@ -98,7 +98,7 @@ struct PulseLoader: View {
                 .foregroundColor(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .defaultBackgroundStyle()
+        .glassBackground()
         .onAppear {
             isPulsing = true
         }
