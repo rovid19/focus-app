@@ -11,6 +11,13 @@ class HotkeyManager {
     private var quitHardMode: HotKey?
     private var closeMenuBar: HotKey?
 
+    private var lastRegistered: (
+        focus: (key: Key, modifiers: NSEvent.ModifierFlags),
+        blocker: (key: Key, modifiers: NSEvent.ModifierFlags),
+        close: (key: Key, modifiers: NSEvent.ModifierFlags),
+        quitHardMode: (key: Key, modifiers: NSEvent.ModifierFlags)
+    )?
+
     init(homeController: HomeController, appDelegate: AppDelegate) {
         self.homeController = homeController
         self.appDelegate = appDelegate
@@ -18,7 +25,7 @@ class HotkeyManager {
             focus: (.a, .option),
             blocker: (.c, .option),
             close: (.escape, .option),
-            quitHardMode: (.k, .option)
+            quit: (.k, .option)
         )
     }
 
@@ -26,8 +33,12 @@ class HotkeyManager {
         focus: (key: Key, modifiers: NSEvent.ModifierFlags),
         blocker: (key: Key, modifiers: NSEvent.ModifierFlags),
         close: (key: Key, modifiers: NSEvent.ModifierFlags),
-        quitHardMode: (key: Key, modifiers: NSEvent.ModifierFlags)
+        quit: (key: Key, modifiers: NSEvent.ModifierFlags) // 👈 renamed
     ) {
+        lastRegistered = (focus, blocker, close, quit)
+
+        print("registerHotkey", focus)
+
         // Focus
         openFocusSession = HotKey(key: focus.key, modifiers: focus.modifiers)
         openFocusSession?.keyDownHandler = { [weak self] in
@@ -53,9 +64,30 @@ class HotkeyManager {
         }
 
         // Quit HardMode
-        self.quitHardMode = HotKey(key: quitHardMode.key, modifiers: quitHardMode.modifiers)
-        self.quitHardMode?.keyDownHandler = { [weak self] in
+        quitHardMode = HotKey(key: quit.key, modifiers: quit.modifiers) // 👈 now uses parameter `quit`
+        quitHardMode?.keyDownHandler = { [weak self] in
             self?.killHardmode()
+        }
+    }
+
+    /// Disable all registered hotkeys (for recording mode)
+    func pauseHotkeys() {
+        openFocusSession = nil
+        openBlockerSession = nil
+        closeMenuBar = nil
+        quitHardMode = nil
+    }
+
+    /// Re-enable the last registered hotkeys
+    func resumeHotkeys() {
+        if let last = lastRegistered {
+            print("resumeHotkeys", last)
+            registerHotkey(
+                focus: last.focus,
+                blocker: last.blocker,
+                close: last.close,
+                quit: last.quitHardMode
+            )
         }
     }
 

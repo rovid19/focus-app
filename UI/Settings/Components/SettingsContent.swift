@@ -18,7 +18,8 @@ struct SettingsContent: View {
                 case .stats:
                     StatsSettingsView(controller: controller.statsController)
                 case .general:
-                    GeneralSettingsView(controller: controller.generalController)
+                    GeneralSettingsView()
+                        .environmentObject(controller.generalController)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

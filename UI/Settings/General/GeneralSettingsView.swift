@@ -1,16 +1,16 @@
 import SwiftUI
 
 struct GeneralSettingsView: View {
-    @ObservedObject var controller: GeneralSettingsController
+        @EnvironmentObject var controller: GeneralSettingsController
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 // Hotkeys Section
-                HotkeysSection(controller: controller)
+                HotkeysSection()
 
                 // Session Settings Section
-                SessionSettingsSection(controller: controller)
+                SessionSettingsSection()
             }
             .padding(24)
         }
@@ -21,7 +21,7 @@ struct GeneralSettingsView: View {
 // MARK: - Hotkeys Section
 
 struct HotkeysSection: View {
-    @ObservedObject var controller: GeneralSettingsController
+    @EnvironmentObject var controller: GeneralSettingsController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -71,7 +71,7 @@ struct HotkeysSection: View {
 // MARK: - Session Settings Section
 
 struct SessionSettingsSection: View {
-    @ObservedObject var controller: GeneralSettingsController
+    @EnvironmentObject var controller: GeneralSettingsController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -190,6 +190,7 @@ struct HotkeyRow: View {
 // MARK: - Hotkey Input
 
 struct HotkeyInput: View {
+    @EnvironmentObject var controller: GeneralSettingsController
     let hotkey: String
     let isRecording: Bool
     let onStartRecording: () -> Void
@@ -234,8 +235,12 @@ struct HotkeyInput: View {
                     print("Captured: \(combo)")
                     onCaptured?(combo) // forward to controller
                 }
+                .environmentObject(controller)
                 .frame(width: 0, height: 0) // invisible but active
             }
+        }
+        .onAppear {
+            print("isRecording", isRecording)
         }
     }
 }
