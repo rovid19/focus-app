@@ -24,7 +24,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyManager = HotkeyManager(homeController: homeController, appDelegate: self)
         settingsController = SettingsController(homeController: homeController, hotkeyManager: hotkeyManager)
 
-
         Task {
             await homeController.checkAuth()
             await settingsController.generalController.updateUserDefaults()
@@ -83,6 +82,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.contentViewController = makeHostingController()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            if let window = popover.contentViewController?.view.window {
+                window.backgroundColor = .clear // transparent background
+                window.isOpaque = false
+                window.contentView?.superview?.wantsLayer = true
+                window.contentView?.superview?.layer?.cornerRadius = 16
+                window.contentView?.superview?.layer?.masksToBounds = true
+            }
         }
     }
 

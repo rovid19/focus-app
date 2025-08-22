@@ -107,6 +107,7 @@ class FocusController: ObservableObject {
     }
 
     func startTimer() async {
+        TabManager.shared.startBlocking(limit: allowedTabsDuringBlocking)
         print("startTimer on focus controller")
         // guard !homeController.isTimerRunning else { return }
         homeController.isTimerRunning = true
