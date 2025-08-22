@@ -1,16 +1,33 @@
 import HotKey
 import SwiftUI
 
+struct GeneralSettingsRow: Codable {
+    let user_id: String
+    let focus_duration: Int
+    let blocker_duration: Int
+    let allowed_tabs: Int
+}
+
 // MARK: - Controller
 
 class GeneralSettingsController: ObservableObject {
-    @Published var settings: GeneralSettings = .init()
+    @Published var settings: GeneralSettings = .init() {
+        didSet {
+            Task { @MainActor in
+                await changeHomeControllerValues()
+            }
+        }
+    }
+
+    weak var homeController: HomeController?
     weak var hotkeyManager: HotkeyManager?
 
     // Hotkey recording states
     @Published var isRecordingFocusHotkey = false
     @Published var isRecordingBlockerHotkey = false
     @Published var isRecordingCloseHotkey = false
+
+    var changeHotkey: HotkeyAction = .focus
 
     // Default key map
     var hotkeys: [HotkeyAction: (key: Key, modifiers: NSEvent.ModifierFlags)] = [
@@ -20,18 +37,84 @@ class GeneralSettingsController: ObservableObject {
         .quitHardMode: (.k, .option),
     ]
 
-    init(hotkeyManager: HotkeyManager? = nil) {
+    init(hotkeyManager: HotkeyManager? = nil, homeController: HomeController? = nil)  {
         self.hotkeyManager = hotkeyManager
+        self.homeController = homeController
+    }
+
+    func changeHomeControllerValues() async {
+        homeController?.focusController.initialTimerMinutes = settings.focusMinimalDuration * 60
+        homeController?.focusController.timerMinutes = settings.focusMinimalDuration * 60
+        homeController?.focusController.allowedTabsDuringBlocking = settings.allowedTabsDuringBlocking
+        homeController?.blockerController.selectedHours = settings.blockerMinimalDuration
+
+        await saveSettingsToDatabase()
+    }
+
+    func updateUserDefaults() async {
+        guard let user = await SupabaseAuth.shared.user else {
+            print("settings updateUserDefaults: No logged-in user")
+            return
+        }
+
+        do {
+            let rows: [GeneralSettingsRow] = try await SupabaseDB.shared
+                .select(table: "General", filters: ["user_id": user.id.uuidString])
+            guard let row = rows.first else {
+                print("No General row for user")
+                return
+            }
+
+            print("row", row)
+
+            settings.focusMinimalDuration = row.focus_duration / 60
+            settings.blockerMinimalDuration = row.blocker_duration
+            settings.allowedTabsDuringBlocking = row.allowed_tabs
+        } catch {
+            print("❌ Failed to fetch General row:", error)
+        }
+    }
+
+    func saveSettingsToDatabase() async {
+        guard let user = await SupabaseAuth.shared.user else {
+            print("No logged-in user")
+            return
+        }
+
+        let row = GeneralSettingsRow(
+            user_id: user.id.uuidString, // 👈 convert UUID → String
+            focus_duration: settings.focusMinimalDuration * 60,
+            blocker_duration: settings.blockerMinimalDuration,
+            allowed_tabs: settings.allowedTabsDuringBlocking
+        )
+
+        do {
+            try await SupabaseDB.shared.upsert(table: "General", data: row)
+            print("Settings saved to database")
+        } catch {
+            print("Error saving settings to database: \(error)")
+        }
     }
 
     // Start "recording" a hotkey → UI shows "Press keys..."
+    // Start "recording" a hotkey → UI shows "Press keys..."
     func startRecordingHotkey(for type: HotkeyType) {
+        print("startRecordingHotkey", type)
         hotkeyManager?.pauseHotkeys()
         resetRecordingStates()
+
         switch type {
-        case .focus: isRecordingFocusHotkey = true
-        case .blocker: isRecordingBlockerHotkey = true
-        case .close: isRecordingCloseHotkey = true
+        case .focus:
+            isRecordingFocusHotkey = true
+            changeHotkey = .focus
+
+        case .blocker:
+            isRecordingBlockerHotkey = true
+            changeHotkey = .blocker
+
+        case .close:
+            isRecordingCloseHotkey = true
+            changeHotkey = .close
         }
     }
 
@@ -44,9 +127,13 @@ class GeneralSettingsController: ObservableObject {
         isRecordingBlockerHotkey = false
         isRecordingCloseHotkey = false
     }
+
     /// Called when capture view detects a combo
     func saveNewHotkey(for type: HotkeyAction, hotkey: String) {
+        print("saveNewHotkey", type, hotkey)
+        print("old", hotkeys)
         hotkeys[type] = parseHotkey(hotkey)
+        print("new", hotkeys)
         stopRecordingHotkey()
         hotkeyManager?.registerHotkey(
             focus: hotkeys[.focus] ?? (.a, .option),
@@ -55,7 +142,7 @@ class GeneralSettingsController: ObservableObject {
             quit: hotkeys[.quitHardMode] ?? (.k, .option)
         )
         updateSettings(for: type, hotkeyString: hotkey)
-       // hotkeyManager?.resumeHotkeys()
+        // hotkeyManager?.resumeHotkeys()
     }
 
     private func updateSettings(for type: HotkeyAction, hotkeyString: String) {
@@ -126,7 +213,7 @@ struct GeneralSettings {
     var closeHotkey: String = "⌥⎋"
 
     var focusMinimalDuration: Int = 30
-    var blockerMinimalDuration: Int = 15
+    var blockerMinimalDuration: Int = 12
     var allowedTabsDuringBlocking: Int = 3
 
     var launchAtStartup: Bool = false
@@ -146,9 +233,18 @@ struct HotkeyCaptureView: NSViewRepresentable {
     @EnvironmentObject var controller: GeneralSettingsController
     var onCaptured: (String) -> Void
 
-    func makeNSView(context _: Context) -> NSView {
+    class Coordinator {
+        var monitor: Any?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> NSView {
         let view = NSView()
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+
+        context.coordinator.monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard let chars = event.charactersIgnoringModifiers,
                   let keyChar = chars.uppercased().first
             else {
@@ -168,15 +264,23 @@ struct HotkeyCaptureView: NSViewRepresentable {
             }
 
             onCaptured(combo)
-            controller.saveNewHotkey(for: .focus, hotkey: combo)
+            controller.saveNewHotkey(for: controller.changeHotkey, hotkey: combo)
             controller.stopRecordingHotkey()
 
             return nil
         }
+
         return view
     }
 
     func updateNSView(_: NSView, context _: Context) {}
+
+    static func dismantleNSView(_: NSView, coordinator: Coordinator) {
+        print("dismantleNSView")
+        if let monitor = coordinator.monitor {
+            NSEvent.removeMonitor(monitor)
+        }
+    }
 }
 
 extension Key {

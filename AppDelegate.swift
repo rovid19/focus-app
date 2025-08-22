@@ -23,6 +23,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         homeController = HomeController(router: router, appDelegate: self)
         hotkeyManager = HotkeyManager(homeController: homeController, appDelegate: self)
         settingsController = SettingsController(homeController: homeController, hotkeyManager: hotkeyManager)
+
+
+        Task {
+            await homeController.checkAuth()
+            await settingsController.generalController.updateUserDefaults()
+        }
+
         // Setup status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
@@ -30,8 +37,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                    accessibilityDescription: "Focus App")
             button.action = #selector(togglePopover(_:))
         }
-
-        
 
         // Setup popover
         popover = NSPopover()
@@ -102,7 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true 
+        window.isMovableByWindowBackground = true
         window.title = "Settings"
         window.contentView = hosting
         window.isOpaque = false
@@ -162,10 +167,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // OAuth callback
     func application(_: NSApplication, open urls: [URL]) {
-        guard let url = urls.first,
-              let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-              .queryItems?.first(where: { $0.name == "code" })?.value
-        else { return }
+        guard let url = urls.first else {
+            return
+        }
+
+        guard let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?.first(where: { $0.name == "code" })?.value
+        else {
+            return
+        }
 
         Task {
             do {
@@ -175,10 +185,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     .exchangeCodeForSession(authCode: code)
 
                 SupabaseAuth.shared.user = session.user
-                print("Logged in \(SupabaseAuth.shared.user)")
 
             } catch {
-                NSLog("[focus-app] Exchange failed: \(error)")
+                NSLog("[AUTH FLOW] Error exchanging code for session: \(error)")
             }
         }
     }

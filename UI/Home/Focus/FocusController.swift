@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 class FocusController: ObservableObject {
-    private(set) var initialTimerMinutes: Int = 1800 {
+    var initialTimerMinutes: Int = 1800 {
         didSet {
             onInitialMinutesChanged()
         }
@@ -17,6 +17,7 @@ class FocusController: ObservableObject {
     @Published var isTimerLimited: Bool = true
     @ObservedObject var homeController: HomeController
     private var cancellables = Set<AnyCancellable>()
+     var allowedTabsDuringBlocking: Int = 3
 
     // Computed property that combines your conditional logic
     var shouldHideControls: Bool {

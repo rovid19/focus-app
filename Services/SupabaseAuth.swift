@@ -28,17 +28,22 @@ final class SupabaseAuth: ObservableObject {
     }
 
     func signInWithGoogle() async throws {
+        NSLog("[AUTH FLOW] Step 1: Starting Google OAuth sign in...")
+        
         let oauthURL = try await client.auth.getOAuthSignInURL(
             provider: .google,
             redirectTo: URL(string: "blockerapp://auth-callback")!
         )
+        
+        NSLog("[AUTH FLOW] Step 2: Generated OAuth URL: \(oauthURL)")
 
         // Open OAuth URL in browser
         await MainActor.run {
+            NSLog("[AUTH FLOW] Step 3: Opening OAuth URL in browser...")
             if NSWorkspace.shared.open(oauthURL) {
-                NSLog("[blockerapp] OAuth URL opened successfully: \(oauthURL)")
+                NSLog("[AUTH FLOW] Step 4: OAuth URL opened successfully - user should now see Google login in browser")
             } else {
-                NSLog("[blockerapp] Failed to open OAuth URL")
+                NSLog("[AUTH FLOW] ERROR: Failed to open OAuth URL")
             }
         }
     }

@@ -9,7 +9,7 @@ class SettingsController: ObservableObject {
     // Child controllers
     lazy var appBlockerController = AppBlockerSettingsController()
     lazy var websiteBlockerController = WebsiteBlockerSettingsController()
-    lazy var generalController = GeneralSettingsController(hotkeyManager: hotkeyManager)
+    lazy var generalController = GeneralSettingsController(hotkeyManager: hotkeyManager, homeController: homeController)
     lazy var statsController = StatsSettingsController(homeController: self.homeController)
  
     init(homeController: HomeController? = nil, hotkeyManager: HotkeyManager? = nil) {

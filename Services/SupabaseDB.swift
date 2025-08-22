@@ -66,21 +66,9 @@ class SupabaseDB {
         return try await query.select().execute().value
     }
 
-    func upsert<T: Encodable>(
-        table: String,
-        data: T,
-        onConflict: String? = nil
-    ) async throws {
-        if let conflict = onConflict {
-            try await client
-                .from(table)
-                .upsert(data, onConflict: conflict)
-                .execute()
-        } else {
-            try await client
-                .from(table)
-                .upsert(data)
-                .execute()
-        }
+    func upsert<T: Codable>(table: String, data: T) async throws {
+        try await client.from(table).upsert(data).execute().value
     }
+
+   
 }

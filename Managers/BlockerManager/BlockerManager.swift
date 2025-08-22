@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-struct BlockRow: Encodable {
+struct BlockRow: Codable {
     let user_id: String
     let BlockedWebsites: [String]
     let BlockedApps: [String]
@@ -67,11 +67,7 @@ class BlockerManager: ObservableObject {
         )
 
         do {
-            try await SupabaseDB.shared.getClient()
-                .from("Blocker")
-                .upsert(row, onConflict: "user_id")
-                .execute()
-
+           try await SupabaseDB.shared.upsert(table: "Blocker", data: row)
             print("Blocked domains saved to database: \(blockedWebsites)")
             print("Blocked apps saved to database: \(blockedApps)")
         } catch {

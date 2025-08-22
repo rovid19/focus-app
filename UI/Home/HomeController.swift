@@ -16,9 +16,8 @@ class HomeController: ObservableObject {
         self.router = router
         self.appDelegate = appDelegate
         // self.blockerManager = blockerManager
-        checkAuth()
+        // checkAuth()
         print("HomeController init")
-      
     }
 
     // Home View
@@ -44,15 +43,13 @@ class HomeController: ObservableObject {
         BlockerView(controller: blockerController)
     }
 
-    func checkAuth() {
-        Task {
-            let signedIn = await SupabaseAuth.shared.isUserSignedIn()
+    func checkAuth() async {
+        let signedIn = await SupabaseAuth.shared.isUserSignedIn()
 
-            if !signedIn {
-                print("User is not authenticated")
-            } else {
-                print("User is authenticated")
-            }
+        if !signedIn {
+            print("User is not authenticated")
+        } else {
+            print("User is authenticated")
         }
     }
 
