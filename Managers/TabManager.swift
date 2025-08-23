@@ -32,47 +32,27 @@ class TabManager: ObservableObject {
     func stopBlocking() {
         timer?.cancel()
         timer = nil
-                NSLog("🛑 [focus-app] Tab blocking stopped")
+        NSLog("🛑 [focus-app] Tab blocking stopped")
     }
 
     private func enforceLimit(browser: String) {
-        let script: String
-
-        if browser == "Safari" {
-            script = """
-            tell application "Safari"
-                repeat with w in windows
-                    set tabCount to (count of tabs of w)
+        let script = """
+        if application "\(browser)" is running then
+            tell application "\(browser)"
+                if (count of windows) > 0 then
+                    set tabCount to count of tabs of window 1
                     if tabCount > \(tabLimit) then
-                        repeat with i from tabCount to (\(tabLimit) + 1) by -1
-                            close tab i of w
-                        end repeat
+                        close (tabs of window 1 whose index > \(tabLimit))
                     end if
-                end repeat
+                end if
             end tell
-            """
-        } else {
-            script = """
-            tell application "Google Chrome"
-                repeat with w in windows
-                    set tabCount to (count of tabs of w)
-                    if tabCount > \(tabLimit) then
-                        repeat with i from tabCount to (\(tabLimit) + 1) by -1
-                            close tab i of w
-                        end repeat
-                    end if
-                end repeat
-            end tell
-            """
-        }
-
+        end if
+        """
         if let appleScript = NSAppleScript(source: script) {
             var error: NSDictionary?
             appleScript.executeAndReturnError(&error)
             if let error = error {
-                NSLog("❌ [focus-app] AppleScript error in \(browser): \(error)")
-            } else {
-                NSLog("✅ [focus-app] Enforced tab limit in \(browser)")
+                print("❌ [focus-app] AppleScript error in \(browser): \(error)")
             }
         }
     }

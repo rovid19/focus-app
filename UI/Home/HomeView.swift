@@ -59,8 +59,7 @@ struct HomeView: View {
             }
         }
         .frame(width: 460, height: 420) // outer popup frame stays fixed
-        .glassWindow()
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .glassWindow(cornerRadius: 0)
         .animation(.easeInOut(duration: 0.8), value: controller.isTimerRunning)
         .onAppear {
             Task { @MainActor in
@@ -112,7 +111,7 @@ private extension HomeView {
 
             // Border
             Rectangle()
-                .fill(Color.white.opacity(0.1))
+                .fill(Color.white.opacity(0.05))
                 .frame(height: 1)
                 .padding(.top, 12)
         }
@@ -123,7 +122,7 @@ private extension HomeView {
         VStack(spacing: 0) {
             // Border
             Rectangle()
-                .fill(Color.white.opacity(0.1))
+                .fill(Color.white.opacity(0.05))
                 .frame(height: 1)
                 .padding(.bottom, 12)
 

@@ -11,22 +11,22 @@ struct TimerGlow: View {
     var body: some View {
         ZStack {
             // Soft wide glow
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16)
                 .stroke(Color.cyan.opacity(opacity * 0.6), lineWidth: 18)
                 .blur(radius: 24)
-                .mask(RoundedRectangle(cornerRadius: 16))
+                .mask(RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16))
 
             // Medium glow
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16)
                 .stroke(Color.cyan.opacity(opacity * 0.8), lineWidth: 12)
                 .blur(radius: 14)
-                .mask(RoundedRectangle(cornerRadius: 16))
+                .mask(RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16))
 
             // Sharp core edge
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16)
                 .stroke(Color.cyan.opacity(opacity), lineWidth: 4)
                 .blur(radius: 4)
-                .mask(RoundedRectangle(cornerRadius: 16))
+                .mask(RoundedRectangle(cornerRadius: controller.isTimerRunning ? 8 : 16))
         }
         .allowsHitTesting(false)
         .onAppear {

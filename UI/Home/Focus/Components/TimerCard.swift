@@ -22,8 +22,8 @@ struct TimerCard: View {
         .frame(maxHeight: .infinity)
         .layoutPriority(1)
         .padding(32)
-        .glassBackground(cornerRadius: 16)
-        .animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isTimerLimited)
+        .glassBackground(cornerRadius: controller.isTimerRunning ? 8 : 16)
+        //.animation(.spring(response: 0.8, dampingFraction: 1), value: controller.isTimerLimited)
         .overlay(TimerGlow(controller: controller))
     }
 }
@@ -114,7 +114,7 @@ private struct TimerActionButton: View {
             .glassy()
 
             if controller.isSessionRunning {
-                Button(action:{ Task { await controller.terminateSession}}) {
+                Button(action:{ Task { await controller.terminateSession()}}) {
                     Label("Stop", systemImage: "stop")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.white)

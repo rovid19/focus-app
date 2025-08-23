@@ -37,11 +37,11 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(.regularMaterial)
             }
-            .frame(minWidth: 600, minHeight: 400)
+            .frame(width: 700, height: 600)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)

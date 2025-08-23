@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 class SettingsController: ObservableObject {
     @Published var selectedSection: SettingsSection = .blocker
  

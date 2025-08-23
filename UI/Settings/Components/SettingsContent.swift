@@ -16,7 +16,9 @@ struct SettingsContent: View {
                 case .apps:
                     AppBlockerSettingsView(controller: controller.appBlockerController)
                 case .stats:
-                    StatsSettingsView(controller: controller.statsController)
+                    ScrollView {
+                        StatsSettingsView(controller: controller.statsController)
+                    }
                 case .general:
                     GeneralSettingsView()
                         .environmentObject(controller.generalController)

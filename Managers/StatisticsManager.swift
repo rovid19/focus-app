@@ -23,6 +23,7 @@ final class StatisticsManager: ObservableObject {
     @Published var totalSeconds: Int = 0
     @Published var totalHours: String = ""
     @Published var isLoading: Bool = true
+    @Published var hoursPerDay: [Date: Int] = [:]
 
     private(set) var userId: UUID?
 
@@ -56,12 +57,14 @@ final class StatisticsManager: ObservableObject {
                 columns: "*",
                 filters: ["user_id": userId]
             )
-            //print("stats", stats)
+            // print("stats", stats)
             isLoading = false
             print("stats", stats)
             self.stats = stats
             totalSeconds = getDailySecondsSummary()
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
+            populateHoursPerDay()
+            print("hoursPerDay", hoursPerDay)
         } catch {
             print("Error getting stats from database: \(error)")
         }
@@ -118,7 +121,25 @@ final class StatisticsManager: ObservableObject {
             }
             return totalSum
         }
-        
+
         return totalSeconds
+    }
+
+    func populateHoursPerDay() {
+        var dailyTotals: [Date: Int] = [:]
+        let calendar = Calendar.current
+
+        for stat in stats {
+            guard let createdAt = stat.createdAt else { continue }
+            let day = calendar.startOfDay(for: createdAt)
+
+            // accumulate seconds
+            dailyTotals[day, default: 0] += stat.time_elapsed
+        }
+
+        // convert to hours (rounded down)
+        hoursPerDay = dailyTotals.mapValues { seconds in
+            seconds / 3600
+        }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct StatsSettingsView: View {
+    
     @ObservedObject var controller: StatsSettingsController
     @State private var summaryVisible = false
     @State private var statsListVisible = false
@@ -9,6 +10,10 @@ struct StatsSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Activity Tracker
+                ActivityTrackerView()
+
+
                 // Summary Section
                 VStack(spacing: 12) {
                     SummaryStatSettings(statsManager: statsManager)
@@ -16,7 +21,7 @@ struct StatsSettingsView: View {
                         .offset(y: summaryVisible ? 0 : 20)
                         .animation(.easeOut(duration: 0.6), value: summaryVisible)
                 }
-                
+
                 // Stats Content
                 VStack(spacing: 12) {
                     if statsManager.isLoading {
@@ -34,14 +39,14 @@ struct StatsSettingsView: View {
                                         .font(.custom("Inter-Regular", size: 15))
                                         .fontWeight(.medium)
                                         .foregroundColor(.white.opacity(0.9))
-                                    
+
                                     Spacer()
-                                    
+
                                     Text("\(statsManager.stats.count) total")
                                         .font(.custom("Inter-Regular", size: 12))
                                         .foregroundColor(.white.opacity(0.6))
                                 }
-                                
+
                                 LazyVStack(spacing: 8) {
                                     ForEach(statsManager.stats.reversed(), id: \.id) { stat in
                                         StatRowView(stat: stat, statsManager: statsManager)
@@ -54,6 +59,10 @@ struct StatsSettingsView: View {
                         }
                     }
                 }
+
+                // Social Media Share
+                SocialMediaShare(controller: controller.socialMediaShareController)
+                    .padding(.top, 24)
             }
             .padding(24)
         }
@@ -61,13 +70,13 @@ struct StatsSettingsView: View {
         .onAppear {
             animateElements()
         }
-        .onChange(of: statsManager.stats) { newStats in
+        .onChange(of: statsManager.stats) { _ in
             Task { @MainActor in
                 animateElements()
             }
         }
     }
-    
+
     // Access StatisticsManager through HomeController
     private var statsManager: StatisticsManager {
         return StatisticsManager.shared
@@ -101,16 +110,16 @@ private struct EmptyStatsSettingsView: View {
                             .stroke(Color.white.opacity(0.1), lineWidth: 1)
                     )
                     .frame(width: 40, height: 40)
-                
+
                 Image(systemName: "chart.bar")
                     .font(.system(size: 20))
                     .foregroundColor(.white.opacity(0.7))
             }
-            
+
             Text("No focus sessions yet.")
                 .font(.custom("Inter-Regular", size: 14))
                 .foregroundColor(.white.opacity(0.8))
-            
+
             Text("Complete your first focus session to see detailed statistics.")
                 .font(.custom("Inter-Regular", size: 12))
                 .foregroundColor(.white.opacity(0.6))
@@ -130,9 +139,10 @@ private struct EmptyStatsSettingsView: View {
 }
 
 // MARK: - SummaryStat for Settings (doesn't use EnvironmentObject)
+
 struct SummaryStatSettings: View {
     let statsManager: StatisticsManager
-    
+
     var body: some View {
         let totalSeconds = statsManager.totalSeconds
         let totalHours = statsManager.totalHours
@@ -155,27 +165,27 @@ struct SummaryStatSettings: View {
                                 .stroke(Color.blue.opacity(0.3), lineWidth: 1)
                         )
                         .frame(width: 40, height: 40)
-                    
+
                     Image(systemName: "clock")
                         .font(.system(size: 20))
                         .foregroundColor(Color.blue.opacity(0.8))
                 }
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(totalHours)")
                         .font(.custom("Inter-Regular", size: 22))
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .tracking(-0.5)
-                    
+
                     Text("Daily summary across all sessions")
                         .font(.custom("Inter-Regular", size: 12))
                         .foregroundColor(.white.opacity(0.6))
                 }
             }
-            
+
             Spacer()
-            
+
             // Right side: Time display
             VStack(alignment: .trailing, spacing: 2) {
                 Text("today")
@@ -190,7 +200,7 @@ struct SummaryStatSettings: View {
                     LinearGradient(
                         colors: [
                             Color.blue.opacity(0.1),
-                            Color.indigo.opacity(0.1)
+                            Color.indigo.opacity(0.1),
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

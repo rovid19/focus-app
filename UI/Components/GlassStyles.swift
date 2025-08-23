@@ -9,7 +9,8 @@ struct GlassWindowStyle: ViewModifier {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(Color.white.opacity(0), lineWidth: 1)
+
             )
             .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
     }
@@ -86,6 +87,7 @@ struct GlassyModifier: ViewModifier {
     let paddingHorizontal: CGFloat
     let paddingVertical: CGFloat
     let cornerRadius: CGFloat
+    let stroke: Bool
     
     func body(content: Content) -> some View {
         content
@@ -93,10 +95,10 @@ struct GlassyModifier: ViewModifier {
             .padding(.vertical, paddingVertical)
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.white.opacity(stroke ? 0.1 : 0))
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            .stroke(Color.white.opacity(stroke ? 0.15 : 0), lineWidth: 1)
                     )
             )
             .buttonStyle(PlainButtonStyle())
@@ -129,7 +131,7 @@ extension View {
         self.modifier(LegacyGlassBackgroundStyle(cornerRadius: cornerRadius))
     }
     
-    func glassy(paddingHorizontal: CGFloat = 12, paddingVertical: CGFloat = 8, cornerRadius: CGFloat = 8) -> some View {
-        self.modifier(GlassyModifier(paddingHorizontal: paddingHorizontal, paddingVertical: paddingVertical, cornerRadius: cornerRadius))
+    func glassy(paddingHorizontal: CGFloat = 12, paddingVertical: CGFloat = 8, cornerRadius: CGFloat = 8, stroke: Bool = true) -> some View {
+        self.modifier(GlassyModifier(paddingHorizontal: paddingHorizontal, paddingVertical: paddingVertical, cornerRadius: cornerRadius, stroke: stroke))
     }
 }

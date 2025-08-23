@@ -163,6 +163,7 @@ class FocusController: ObservableObject {
     }
 
     func terminateSession() async {
+        TabManager.shared.stopBlocking()
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false

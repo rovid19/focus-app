@@ -7,7 +7,7 @@ import AppKit
 import CoreText
 import SwiftUI
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     var statusItem: NSStatusItem!
     var popover: NSPopover!
     var homeController: HomeController!
@@ -29,19 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             await settingsController.generalController.updateUserDefaults()
         }
 
-        // Setup status bar item
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "brain.head.profile",
-                                   accessibilityDescription: "Focus App")
-            button.action = #selector(togglePopover(_:))
-        }
-
-        // Setup popover
-        popover = NSPopover()
-        popover.behavior = .transient
-        popover.contentSize = NSSize(width: 460, height: 420)
-        popover.contentViewController = makeHostingController()
+        setupPopover()
 
         // Register fonts
         registerFonts()
@@ -60,7 +48,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func popoverDidShow(_: Notification) {
+        guard let window = popover?.contentViewController?.view.window,
+              let frameView = window.contentView?.superview else { return }
+
+        window.isOpaque = false
+        window.backgroundColor = .clear
+
+        frameView.wantsLayer = true
+        frameView.layer?.cornerRadius = 8
+        frameView.layer?.masksToBounds = true
+
+        // Kill the bright border by painting over it
+        frameView.layer?.borderWidth = 1
+        frameView.layer?.borderColor = NSColor.white.withAlphaComponent(0.1).cgColor
+    }
+
     // MARK: - Helpers
+
+    func setupPopover() {
+        // Setup status bar item
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "brain.head.profile",
+                                   accessibilityDescription: "Focus App")
+            button.action = #selector(togglePopover(_:))
+        }
+
+        // Setup popover
+        popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentSize = NSSize(width: 460, height: 420)
+        popover.contentViewController = makeHostingController()
+        popover.delegate = self
+    }
 
     func makeHostingController() -> NSHostingController<AnyView> {
         let root = AnyView(

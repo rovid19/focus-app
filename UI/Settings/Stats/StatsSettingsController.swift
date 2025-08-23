@@ -1,8 +1,10 @@
 import SwiftUI
 
+@MainActor
 class StatsSettingsController: ObservableObject {
     @Published var settings: StatsSettings = StatsSettings()
     weak var homeController: HomeController?
+    var socialMediaShareController = SocialMediaShareController()
     
     init(homeController: HomeController? = nil) {
         self.homeController = homeController
