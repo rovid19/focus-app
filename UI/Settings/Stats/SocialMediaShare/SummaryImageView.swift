@@ -40,12 +40,11 @@ struct SummaryImageView: View {
 }
 
 struct ShareableImageView: View {
-    let summary: TodaySummary
+    let summary: SocialMediaSummary
 
     var body: some View {
         ZStack {
             BackgroundGradient()
-
             ShareCard(summary: summary)
                 .padding(24)
         }
@@ -58,36 +57,22 @@ struct ShareableImageView: View {
 
 struct BackgroundGradient: View {
     var body: some View {
-        // Stoic black background with subtle radial highlights
         ZStack {
             Color.black
-
-            // Subtle radial gradients for depth
             RadialGradient(
-                gradient: Gradient(colors: [
-                    Color.white.opacity(0.06),
-                    Color.clear,
-                ]),
+                gradient: Gradient(colors: [Color.white.opacity(0.06), Color.clear]),
                 center: UnitPoint(x: 0.5, y: 0),
                 startRadius: 0,
                 endRadius: 400
             )
-
             RadialGradient(
-                gradient: Gradient(colors: [
-                    Color.white.opacity(0.04),
-                    Color.clear,
-                ]),
+                gradient: Gradient(colors: [Color.white.opacity(0.04), Color.clear]),
                 center: UnitPoint(x: 1, y: 1),
                 startRadius: 0,
                 endRadius: 300
             )
-
             RadialGradient(
-                gradient: Gradient(colors: [
-                    Color.white.opacity(0.035),
-                    Color.clear,
-                ]),
+                gradient: Gradient(colors: [Color.white.opacity(0.035), Color.clear]),
                 center: UnitPoint(x: 0, y: 1),
                 startRadius: 0,
                 endRadius: 250
@@ -99,35 +84,22 @@ struct BackgroundGradient: View {
 // MARK: - Share Card
 
 struct ShareCard: View {
-    let summary: TodaySummary
+    let summary: SocialMediaSummary
 
     var body: some View {
         VStack(spacing: 24) {
-            CardHeader(date: summary.date)
-
+            CardHeader(date: formattedDate(summary.currentDate))
             HeroStats(summary: summary)
-
             DividerLine()
-
             ContentSection(summary: summary)
         }
         .padding(40)
-        /* .background(
-             LinearGradient(
-                 gradient: Gradient(stops: [
-                     .init(color: Color.white.opacity(0.1), location: 0),
-                     .init(color: Color.white.opacity(0.05), location: 0.5),
-                     .init(color: Color.white.opacity(0), location: 1)
-                 ]),
-                 startPoint: .top,
-                 endPoint: .bottom
-             ),
-             in: RoundedRectangle(cornerRadius: 24)
-         )
-         .overlay(
-             RoundedRectangle(cornerRadius: 24)
-                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
-         ) */
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "MMM d, yyyy"
+        return fmt.string(from: date)
     }
 }
 
@@ -138,12 +110,10 @@ struct CardHeader: View {
 
     var body: some View {
         HStack {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(date)
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.7))
-                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(date)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.7))
             }
 
             Spacer()
@@ -161,31 +131,31 @@ struct CardHeader: View {
 }
 
 struct HeroStats: View {
-    let summary: TodaySummary
+    let summary: SocialMediaSummary
 
     var body: some View {
         HStack(spacing: 16) {
             ModernStatCard(
                 icon: "clock",
                 label: "Total\nFocus Time",
-                value: summary.totalHours,
+                value: summary.focusTime,
                 subtitle: "Great pace today—keep the momentum."
             )
 
             ModernStatCard(
                 icon: "flame",
                 label: "Focus Sessions",
-                value: "\(summary.totalSessions)",
-                subtitle: summary.totalSessions > 0 ?
-                    "Avg session \(summary.totalFocusTime / max(summary.totalSessions, 1) / 60)m"
-                    : "No sessions yet",
+                value: "\(summary.focusSessions)",
+                subtitle: summary.focusSessions > 0 ?
+                    "Avg session \(summary.focusTime)" : "No sessions yet"
             )
 
             ModernStatCard(
                 icon: "flame",
                 label: "Current Streak",
-                value: "5 days",
-                subtitle: "You're on fire—don't break it."
+                value: summary.currentStreak > 1 ? "\(summary.currentStreak) days" : "\(summary.currentStreak) day",
+                subtitle: summary.currentStreak > 0 ?
+                    "You're on fire—don't break it." : "Start your streak today."
             )
         }
     }
@@ -200,10 +170,10 @@ struct DividerLine: View {
 }
 
 struct ContentSection: View {
-    let summary: TodaySummary
+    let summary: SocialMediaSummary
 
     var body: some View {
-        SessionsList(sessionNames: summary.sessionNames)
+        SessionsList(sessionNames: summary.focusSessionsNames)
     }
 }
 
@@ -217,24 +187,24 @@ struct ModernStatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(label)
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.7))
-                        .textCase(.uppercase)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(nil) // <- allow wrapping, no "..."
-                        .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.7))
+                    .textCase(.uppercase)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                    Text(value)
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(.white)
-                }
+                Text(value)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil) // allow multiple lines
+                    .fixedSize(horizontal: false, vertical: true) // grow vertically
             }
 
             Text(subtitle)
-                .font(.system(size:11))
+                .font(.system(size: 11))
                 .foregroundColor(.white.opacity(0.6))
         }
         .frame(width: 100, height: 100)
@@ -299,7 +269,7 @@ struct SessionsList: View {
                     SessionRow(
                         color: .gray,
                         name: "No sessions yet",
-                        duration: "Start your first session!",
+                        duration: "Start your first session!"
                     )
                 } else {
                     let colors: [Color] = [.white, .white, .white, .white, .white]
@@ -307,7 +277,7 @@ struct SessionsList: View {
                         SessionRow(
                             color: colors[index % colors.count],
                             name: name,
-                            duration: "\(Int.random(in: 15 ... 60))m",
+                            duration: "\(Int.random(in: 15 ... 60))m"
                         )
                     }
 

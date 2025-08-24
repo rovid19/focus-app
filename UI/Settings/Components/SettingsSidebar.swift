@@ -10,7 +10,7 @@ struct SettingsSidebar: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white.opacity(0.03))
+        .background(.ultraThinMaterial)
         .overlay(
             Rectangle()
                 .fill(Color.white.opacity(0.1))

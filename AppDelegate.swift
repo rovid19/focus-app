@@ -110,6 +110,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 window.contentView?.superview?.layer?.cornerRadius = 16
                 window.contentView?.superview?.layer?.masksToBounds = true
             }
+
+            Task {
+                await StatisticsManager.shared.getStatsFromDatabaseIfNeeded()
+            }
         }
     }
 
@@ -147,6 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
         // keep reference until closed
         window.isReleasedWhenClosed = false
+        window.delegate = self
         settingsWindow = window
 
         // cleanup when closed
@@ -157,6 +162,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         ) { [weak self] _ in
             self?.settingsWindow = nil
         }
+
     }
 
     // Fonts
@@ -233,6 +239,9 @@ extension AppDelegate {
             popover.contentViewController = makeHostingController()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            Task {
+                await StatisticsManager.shared.getStatsFromDatabaseIfNeeded()
+            }
         }
     }
 
@@ -240,3 +249,15 @@ extension AppDelegate {
         popover.performClose(nil)
     }
 }
+
+extension AppDelegate: NSWindowDelegate {
+    func windowDidBecomeKey(_ notification: Notification) {
+        if let window = notification.object as? NSWindow,
+           window == settingsWindow {
+            Task { @MainActor in
+                await StatisticsManager.shared.getStatsFromDatabaseIfNeeded()
+            }
+        }
+    }
+}
+

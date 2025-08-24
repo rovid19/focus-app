@@ -16,6 +16,19 @@ struct Stat: Codable, Identifiable, Equatable {
     }
 }
 
+struct SocialMediaSummary {
+    let focusTime: String
+    let focusSessions: Int
+    let focusSessionsNames: [String]
+    let currentStreak: Int
+    let currentDate: Date = .init()
+}
+
+struct DailyTotal {
+    let seconds: Int
+    let formatted: String
+}
+
 @MainActor
 final class StatisticsManager: ObservableObject {
     static let shared = StatisticsManager()
@@ -23,7 +36,8 @@ final class StatisticsManager: ObservableObject {
     @Published var totalSeconds: Int = 0
     @Published var totalHours: String = ""
     @Published var isLoading: Bool = true
-    @Published var hoursPerDay: [Date: Int] = [:]
+    @Published var hoursPerDay: [Date: DailyTotal] = [:]
+    var lastUpdated: Date?
 
     private(set) var userId: UUID?
 
@@ -35,13 +49,11 @@ final class StatisticsManager: ObservableObject {
 
         let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, userId: uid, createdAt: nil)
         stats.append(stat)
-        print("stats", stat)
         await addStatToDatabase(stat: stat)
     }
 
     func addStatToDatabase(stat: Stat) async {
         do {
-            print("Adding stat to database: \(stat)")
             try await SupabaseDB.shared.insert(table: "Stats", data: stat)
             await getStatsFromDatabase()
         } catch {
@@ -50,21 +62,18 @@ final class StatisticsManager: ObservableObject {
     }
 
     func getStatsFromDatabase() async {
-        print("Getting stats from database")
         do {
             let stats: [Stat] = try await SupabaseDB.shared.select(
                 table: "Stats",
                 columns: "*",
                 filters: ["user_id": userId]
             )
-            // print("stats", stats)
             isLoading = false
-            print("stats", stats)
             self.stats = stats
             totalSeconds = getDailySecondsSummary()
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
             populateHoursPerDay()
-            print("hoursPerDay", hoursPerDay)
+            lastUpdated = Date()
         } catch {
             print("Error getting stats from database: \(error)")
         }
@@ -92,7 +101,7 @@ final class StatisticsManager: ObservableObject {
         self.userId = userId
     }
 
-    func formatSecondsToHoursAndMinutes(_ seconds: Int) -> String {
+    func formatSecondsToHoursAndMinutes(_ seconds: Int, breakValue: Bool = false) -> String {
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
 
@@ -102,8 +111,8 @@ final class StatisticsManager: ObservableObject {
             } else {
                 let minPart = minutes == 1 ? "1 minute" : "\(minutes) minutes"
                 return hours == 1
-                    ? "1 hour \(minPart)"
-                    : "\(hours) hours \(minPart)"
+                    ? (breakValue ? "1 hour \n\(minPart)" : "1 hour \(minPart)")
+                    : (breakValue ? "\(hours) hours \n\(minPart)" : "\(hours) hours \(minPart)")
             }
         } else {
             return minutes == 1 ? "1 minute" : "\(minutes) minutes"
@@ -137,9 +146,73 @@ final class StatisticsManager: ObservableObject {
             dailyTotals[day, default: 0] += stat.time_elapsed
         }
 
-        // convert to hours (rounded down)
+        // build dictionary with both values
         hoursPerDay = dailyTotals.mapValues { seconds in
-            seconds / 3600
+            DailyTotal(
+                seconds: seconds,
+                formatted: formatSecondsToHoursAndMinutes(seconds)
+            )
         }
+    }
+
+    func getCurrentStreak() -> Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // Filter only days with >= 1 hour (3600 seconds)
+        let activeDays = hoursPerDay
+            .filter { $0.value.seconds >= 3600 }
+            .map { calendar.startOfDay(for: $0.key) }
+
+        guard !activeDays.isEmpty else { return 0 }
+
+        let activeSet = Set(activeDays)
+        var streak = 0
+        var currentDay = today
+
+        while activeSet.contains(currentDay) {
+            streak += 1
+            if let prevDay = calendar.date(byAdding: .day, value: -1, to: currentDay) {
+                currentDay = prevDay
+            } else {
+                break
+            }
+        }
+
+        return streak
+    }
+
+    func generateSocialMediaSummary() -> SocialMediaSummary {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let focusTime = formatSecondsToHoursAndMinutes(getDailySecondsSummary(), breakValue: true)
+        let focusSessionsNames = stats
+            .filter { stat in
+                if let createdAt = stat.createdAt {
+                    return calendar.startOfDay(for: createdAt) == today
+                }
+                return false
+            }
+            .map { $0.title }
+
+        let currentStreak = getCurrentStreak()
+
+        return SocialMediaSummary(focusTime: focusTime, focusSessions: focusSessionsNames.count, focusSessionsNames: focusSessionsNames, currentStreak: currentStreak)
+    }
+
+    func getStatsFromDatabaseIfNeeded() async {
+        print("getStatsFromDatabaseIfNeeded")
+        let now = Date()
+
+        if let last = lastUpdated {
+            let timeSinceLastUpdate = now.timeIntervalSince(last)
+            guard timeSinceLastUpdate > 3600 else {
+                print("Skipping fetch — last updated less than 1 hour ago")
+                return
+            }
+        }
+
+        await getStatsFromDatabase()
+        lastUpdated = now
     }
 }

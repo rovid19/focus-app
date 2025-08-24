@@ -2,12 +2,12 @@ import SwiftUI
 
 struct SettingsContent: View {
     @ObservedObject var controller: SettingsController
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Toolbar
             SettingsToolbar(section: controller.selectedSection)
-            
+
             // Content based on selected section
             Group {
                 switch controller.selectedSection {
@@ -16,7 +16,7 @@ struct SettingsContent: View {
                 case .apps:
                     AppBlockerSettingsView(controller: controller.appBlockerController)
                 case .stats:
-                    ScrollView {
+                    ScrollView() {
                         StatsSettingsView(controller: controller.statsController)
                     }
                 case .general:
@@ -31,23 +31,21 @@ struct SettingsContent: View {
 
 struct SettingsToolbar: View {
     let section: SettingsSection
-    
+
     var body: some View {
         HStack {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Image(systemName: section.icon)
                     .font(.system(size: 18))
                     .foregroundColor(.white.opacity(0.8))
-                
+
                 Text(section.rawValue)
-                    .font(.custom("Inter-Regular", size: 16 ))
+                    .font(.custom("Inter-Regular", size: 16))
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
             }
-            
+
             Spacer()
-            
-            
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
