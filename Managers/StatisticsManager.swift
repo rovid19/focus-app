@@ -16,10 +16,14 @@ struct Stat: Codable, Identifiable, Equatable {
     }
 }
 
+struct FocusSession {
+    let title: String
+    let time_elapsed: Int
+}
+
 struct SocialMediaSummary {
     let focusTime: String
-    let focusSessions: Int
-    let focusSessionsNames: [String]
+    let focusSessions: [FocusSession]
     let currentStreak: Int
     let currentDate: Date = .init()
 }
@@ -155,49 +159,60 @@ final class StatisticsManager: ObservableObject {
         }
     }
 
-    func getCurrentStreak() -> Int {
+    func getStatsPerDay(from stats: [Stat]) -> [(date: Date, stats: [Stat])] {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
 
-        // Filter only days with >= 1 hour (3600 seconds)
-        let activeDays = hoursPerDay
-            .filter { $0.value.seconds >= 3600 }
-            .map { calendar.startOfDay(for: $0.key) }
-
-        guard !activeDays.isEmpty else { return 0 }
-
-        let activeSet = Set(activeDays)
-        var streak = 0
-        var currentDay = today
-
-        while activeSet.contains(currentDay) {
-            streak += 1
-            if let prevDay = calendar.date(byAdding: .day, value: -1, to: currentDay) {
-                currentDay = prevDay
-            } else {
-                break
-            }
+        // 1. Group stats by startOfDay
+        let grouped = Dictionary(grouping: stats) { stat in
+            calendar.startOfDay(for: stat.createdAt ?? Date())
         }
 
-        return streak
+        // 2. Sort by date ascending
+        let sorted = grouped.keys.sorted().map { date in
+            (date: date, stats: grouped[date] ?? [])
+        }
+
+        return sorted
+    }
+
+    func getCurrentStreak(from stats: [Stat]) -> [(date: Date, stats: [Stat])] {
+        let statsPerDay = getStatsPerDay(from: stats)
+
+        // 3. Go from latest backwards, filter only days with ≥ 1h
+        let filtered = statsPerDay
+            .reversed()
+            .filter { day in
+                let totalSeconds = day.stats.map { $0.time_elapsed }.reduce(0, +)
+                return totalSeconds >= 3600
+            }
+
+        return filtered
     }
 
     func generateSocialMediaSummary() -> SocialMediaSummary {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
+
+        // Total focus time for today
         let focusTime = formatSecondsToHoursAndMinutes(getDailySecondsSummary(), breakValue: true)
-        let focusSessionsNames = stats
-            .filter { stat in
-                if let createdAt = stat.createdAt {
-                    return calendar.startOfDay(for: createdAt) == today
-                }
-                return false
+
+        // Take today's stats and convert them into [FocusSession]
+        let todaySessions: [FocusSession] = stats.compactMap { stat in
+            if let createdAt = stat.createdAt,
+               calendar.startOfDay(for: createdAt) == today
+            {
+                return FocusSession(title: stat.title, time_elapsed: stat.time_elapsed)
             }
-            .map { $0.title }
+            return nil
+        }
 
-        let currentStreak = getCurrentStreak()
+        let currentStreak = getCurrentStreak(from: stats).count
 
-        return SocialMediaSummary(focusTime: focusTime, focusSessions: focusSessionsNames.count, focusSessionsNames: focusSessionsNames, currentStreak: currentStreak)
+        return SocialMediaSummary(
+            focusTime: focusTime,
+            focusSessions: todaySessions,
+            currentStreak: currentStreak
+        )
     }
 
     func getStatsFromDatabaseIfNeeded() async {

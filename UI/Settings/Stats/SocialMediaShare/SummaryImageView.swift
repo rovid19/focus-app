@@ -137,27 +137,29 @@ struct HeroStats: View {
         HStack(spacing: 16) {
             ModernStatCard(
                 icon: "clock",
-                label: "Total\nFocus Time",
+                label: "Focus \nTime",
                 value: summary.focusTime,
-                subtitle: "Great pace today—keep the momentum."
             )
 
             ModernStatCard(
                 icon: "flame",
-                label: "Focus Sessions",
-                value: "\(summary.focusSessions)",
-                subtitle: summary.focusSessions > 0 ?
-                    "Avg session \(summary.focusTime)" : "No sessions yet"
+                label: "Focus \nSessions",
+                value: "\(summary.focusSessions.count) \nSessions",
             )
 
             ModernStatCard(
                 icon: "flame",
-                label: "Current Streak",
-                value: summary.currentStreak > 1 ? "\(summary.currentStreak) days" : "\(summary.currentStreak) day",
-                subtitle: summary.currentStreak > 0 ?
-                    "You're on fire—don't break it." : "Start your streak today."
+                label: "Current \nStreak",
+                value: summary.currentStreak > 1 ? "\(summary.currentStreak) \ndays" : "\(summary.currentStreak) day",
             )
         }
+    }
+
+    private func averageSessionLength(_ sessions: [FocusSession]) -> String {
+        let totalSeconds = sessions.map { $0.time_elapsed }.reduce(0, +)
+        guard !sessions.isEmpty else { return "0m" }
+        let avgSeconds = totalSeconds / sessions.count
+        return "\(avgSeconds / 60)m"
     }
 }
 
@@ -173,7 +175,7 @@ struct ContentSection: View {
     let summary: SocialMediaSummary
 
     var body: some View {
-        SessionsList(sessionNames: summary.focusSessionsNames)
+        SessionsList(sessions: summary.focusSessions)
     }
 }
 
@@ -183,33 +185,24 @@ struct ModernStatCard: View {
     let icon: String
     let label: String
     let value: String
-    let subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label)
-                    .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.7))
-                    .textCase(.uppercase)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: 6) { // 👈 control spacing here
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundColor(.white.opacity(0.7))
+                .textCase(.uppercase)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Text(value)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(nil) // allow multiple lines
-                    .fixedSize(horizontal: false, vertical: true) // grow vertically
-            }
-
-            Text(subtitle)
-                .font(.system(size: 11))
-                .foregroundColor(.white.opacity(0.6))
+            Text(value)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(width: 100, height: 100)
         .padding(20)
-        .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.white.opacity(0.15), lineWidth: 1)
@@ -241,7 +234,7 @@ struct SessionRow: View {
             Spacer()
         }
         .padding(16)
-        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -250,7 +243,7 @@ struct SessionRow: View {
 }
 
 struct SessionsList: View {
-    let sessionNames: [String]
+    let sessions: [FocusSession]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -265,7 +258,7 @@ struct SessionsList: View {
             }
 
             VStack(spacing: 12) {
-                if sessionNames.isEmpty {
+                if sessions.isEmpty {
                     SessionRow(
                         color: .gray,
                         name: "No sessions yet",
@@ -273,16 +266,16 @@ struct SessionsList: View {
                     )
                 } else {
                     let colors: [Color] = [.white, .white, .white, .white, .white]
-                    ForEach(Array(sessionNames.prefix(4).enumerated()), id: \.offset) { index, name in
+                    ForEach(Array(sessions.prefix(4).enumerated()), id: \.offset) { index, session in
                         SessionRow(
                             color: colors[index % colors.count],
-                            name: name,
-                            duration: "\(Int.random(in: 15 ... 60))m"
+                            name: session.title,
+                            duration: "\(session.time_elapsed / 60)m"
                         )
                     }
 
-                    if sessionNames.count > 4 {
-                        Text("+ \(sessionNames.count - 4) more sessions")
+                    if sessions.count > 4 {
+                        Text("+ \(sessions.count - 4) more sessions")
                             .font(.system(size: 12))
                             .foregroundColor(.white.opacity(0.6))
                             .padding(.leading, 20)

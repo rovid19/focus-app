@@ -40,10 +40,10 @@ struct ActivityTrackerView: View {
     private var legendEntries: [(color: Color, label: String)] {
         [
             (Color.white.opacity(0.05), "0h"),
-            (Color.white.opacity(0.1), "<1h"),
-            (Color.white.opacity(0.2), "1h+"),
-            (Color.white.opacity(0.3), "2h+"),
-            (Color.white.opacity(0.4), "3h+"),
+            (Color.white.opacity(0.15), "<1h"),
+            (Color.white.opacity(0.25), "1h+"),
+            (Color.white.opacity(0.35), "2h+"),
+            (Color.white.opacity(0.45), "3h+"),
         ]
     }
 
@@ -236,15 +236,15 @@ extension ActivityTrackerView {
 
         let hours = total.seconds / 3600
         if total.seconds > 0 && hours < 1 {
-            return Color.white.opacity(0.1) // some activity but <1h
+            return Color.white.opacity(0.15) // some activity but <1h
         } else if hours < 1 {
             return Color.white.opacity(0.05) // truly empty
         } else if hours < 2 {
-            return Color.white.opacity(0.2)
+            return Color.white.opacity(0.25)
         } else if hours < 3 {
-            return Color.white.opacity(0.3)
+            return Color.white.opacity(0.35)
         } else {
-            return Color.white.opacity(0.4)
+            return Color.white.opacity(0.45)
         }
     }
 }

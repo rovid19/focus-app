@@ -13,5 +13,6 @@ class SocialMediaShareController: ObservableObject {
 
     func createTodaySummary() {
         showingSummaryPopup = true
+        print(todaySummary?.currentStreak, todaySummary?.currentStreak)
     }
 }
