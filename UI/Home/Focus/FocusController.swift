@@ -17,7 +17,7 @@ class FocusController: ObservableObject {
     @Published var isTimerLimited: Bool = true
     @ObservedObject var homeController: HomeController
     private var cancellables = Set<AnyCancellable>()
-     var allowedTabsDuringBlocking: Int = 3
+    var allowedTabsDuringBlocking: Int = 3
 
     // Computed property that combines your conditional logic
     var shouldHideControls: Bool {
@@ -47,7 +47,6 @@ class FocusController: ObservableObject {
                 guard let self = self else { return }
                 Task { @MainActor in
                     if bothTrue {
-                        print("changePadding true")
                         self.homeController.changePadding = true
                     } else {
                         self.homeController.changePadding = false
@@ -58,45 +57,74 @@ class FocusController: ObservableObject {
     }
 
     private func onInitialMinutesChanged() {
-        if initialTimerMinutes == 900 {
+        if isSessionRunning { return }
+        print("onInitialMinutesChanged", initialTimerMinutes)
+        if initialTimerMinutes > 900 {
             print("Timer duration is unlimited")
-            isTimerLimited = false
+            isTimerLimited = true
+            // setTimerDurationToZero()
         } else {
             print("Timer duration is limited")
-            isTimerLimited = true
+            isTimerLimited = false
         }
     }
 
+    func showTime() -> Bool {
+        isTimerLimited || isSessionRunning
+    }
+
+    private func setTimerDurationToZero() {
+        timerMinutes = 0
+        initialTimerMinutes = 0
+    }
+
     func decreaseBy5() {
+        if timerMinutes == 0 { return }
         if isSessionRunning { return }
         print(initialTimerMinutes)
         timerMinutes = max(900, timerMinutes - 60)
         initialTimerMinutes = max(900, initialTimerMinutes - 60)
+        if timerMinutes == 900 {
+            timerMinutes = 0
+        }
     }
 
     func decreaseBy15() {
+        if timerMinutes == 0 { return }
         if isSessionRunning { return }
         print(initialTimerMinutes)
         timerMinutes = max(900, timerMinutes - 900)
         initialTimerMinutes = max(900, initialTimerMinutes - 900)
+        if timerMinutes == 900 {
+            timerMinutes = 0
+        }
     }
 
     func increaseBy5() {
         if isSessionRunning { return }
-        print(initialTimerMinutes)
-        timerMinutes += 60
-        initialTimerMinutes += 60
+        if timerMinutes == 0 {
+            timerMinutes = 960
+            initialTimerMinutes = 960
+        } else {
+            print(initialTimerMinutes)
+            timerMinutes += 60
+            initialTimerMinutes += 60
+        }
     }
 
     func increaseBy15() {
         if isSessionRunning { return }
-        print(initialTimerMinutes)
-        timerMinutes += 900
-        initialTimerMinutes += 900
+        if timerMinutes == 0 {
+            timerMinutes = 1800
+            initialTimerMinutes = 1800
+        } else {
+            print(initialTimerMinutes)
+            timerMinutes += 900
+            initialTimerMinutes += 900
+        }
     }
 
     func toggleHardMode() {
-        print("toggleHardMode on focus controller")
         isHardMode = !isHardMode
         AppStateManager.shared.saveFocusState(FocusSessionState(
             timerMinutes: timerMinutes,
@@ -107,13 +135,13 @@ class FocusController: ObservableObject {
     }
 
     func startTimer() async {
+        toggleDoNotDisturb()
         TabManager.shared.startBlocking(limit: allowedTabsDuringBlocking)
-        print("startTimer on focus controller")
-        // guard !homeController.isTimerRunning else { return }
         homeController.isTimerRunning = true
+        var elapsedSeconds = isSessionRunning ? timerMinutes : 0
         isSessionRunning = true
+
         if isTimerLimited {
-            print("timer is limited")
             // Countdown mode
             var remainingSeconds = timerMinutes
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
@@ -133,15 +161,11 @@ class FocusController: ObservableObject {
                     self.homeController.isTimerRunning = false
                     NSSound(named: "Glass")?.play()
                     Task {
-                          await self.terminateSession()
-                      }
+                        await self.terminateSession()
+                    }
                 }
             }
         } else {
-            // Unlimited mode (count up)
-            var elapsedSeconds = 0
-            timerMinutes = 0 // start from zero
-
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
                 guard let self = self else { t.invalidate(); return }
                 elapsedSeconds += 1
@@ -152,23 +176,28 @@ class FocusController: ObservableObject {
         }
     }
 
+    func toggleDoNotDisturb() {
+        let task = Process()
+        task.launchPath = "/usr/bin/shortcuts"
+        task.arguments = ["run", "Toggle DND"]
+        task.launch()
+    }
+
     func stopTimer() {
         timer?.invalidate()
         if homeController.isTimerRunning {
             homeController.isTimerRunning = false
         }
         timer = nil
-        print("timer running", homeController.isTimerRunning)
-        print("session running", isSessionRunning)
     }
 
     func terminateSession() async {
+        toggleDoNotDisturb()
         TabManager.shared.stopBlocking()
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
         let secondsToSend = calculateTimeElapsed(seconds: timerMinutes)
-        print("secondsToSend", secondsToSend)
         await addStatToDatabase(title: "Focus", time_elapsed: secondsToSend)
 
         // Animate the reset by gradually changing the timer value
@@ -224,7 +253,7 @@ class FocusController: ObservableObject {
     }
 
     func addStatToDatabase(title: String, time_elapsed: Int) async {
-        if time_elapsed < 5 {
+        if time_elapsed < 900 {
             print("time_elapsed is less than 15minutes  skipping stat")
             return
         }

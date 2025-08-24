@@ -18,6 +18,7 @@ struct SettingsContent: View {
                 case .stats:
                     ScrollView() {
                         StatsSettingsView(controller: controller.statsController)
+                       // .environmentObject(statsManager)
                     }
                 case .general:
                     GeneralSettingsView()

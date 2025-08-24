@@ -2,11 +2,12 @@ import SwiftUI
 
 struct StatRowView: View {
     let stat: Stat
-    let statsManager: StatisticsManager
+    @EnvironmentObject var statsManager: StatisticsManager
     @State private var showingDeleteConfirmation = false
     @State private var isEditing = false
     @State private var newTitle = ""
     @FocusState private var isTextFieldFocused: Bool
+  
 
     var body: some View {
         ZStack {
@@ -64,7 +65,7 @@ struct StatRowView: View {
                         }) {
                             Label("Rename", systemImage: "pencil")
                         }
-                        
+
                         Button(action: {
                             showingDeleteConfirmation = true
                         }) {
@@ -117,7 +118,7 @@ struct StatRowView: View {
     private func displayTime(_ seconds: Int) -> String {
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
-        
+
         if hours > 0 {
             if minutes == 0 {
                 return "\(hours)h"

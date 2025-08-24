@@ -37,18 +37,24 @@ class GeneralSettingsController: ObservableObject {
         .quitHardMode: (.k, .option),
     ]
 
-    init(hotkeyManager: HotkeyManager? = nil, homeController: HomeController? = nil)  {
+    init(hotkeyManager: HotkeyManager? = nil, homeController: HomeController? = nil) {
         self.hotkeyManager = hotkeyManager
         self.homeController = homeController
     }
 
     func changeHomeControllerValues() async {
-        homeController?.focusController.initialTimerMinutes = settings.focusMinimalDuration * 60
-        homeController?.focusController.timerMinutes = settings.focusMinimalDuration * 60
-        homeController?.focusController.allowedTabsDuringBlocking = settings.allowedTabsDuringBlocking
-        homeController?.blockerController.selectedHours = settings.blockerMinimalDuration
+        if let focusController = homeController?.focusController,
+           !(focusController.isSessionRunning)
+        {
+            focusController.initialTimerMinutes = settings.focusMinimalDuration * 60
+            focusController.timerMinutes = settings.focusMinimalDuration * 60
+            focusController.allowedTabsDuringBlocking = settings.allowedTabsDuringBlocking
+            homeController?.blockerController.selectedHours = settings.blockerMinimalDuration
 
-        await saveSettingsToDatabase()
+            await saveSettingsToDatabase()
+        } else {
+            print("cant change this while session is running")
+        }
     }
 
     func updateUserDefaults() async {

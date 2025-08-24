@@ -33,10 +33,16 @@ struct DailyTotal {
     let formatted: String
 }
 
+struct StatSortedByDate {
+    let date: Date
+    let stats: [Stat]
+}
+
 @MainActor
 final class StatisticsManager: ObservableObject {
     static let shared = StatisticsManager()
     @Published var stats: [Stat] = []
+    @Published var statsSortedByDate: [StatSortedByDate] = []
     @Published var totalSeconds: Int = 0
     @Published var totalHours: String = ""
     @Published var isLoading: Bool = true
@@ -77,6 +83,8 @@ final class StatisticsManager: ObservableObject {
             totalSeconds = getDailySecondsSummary()
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
             populateHoursPerDay()
+            statsSortedByDate = getStatsPerDay(from: stats)
+            print("statsSortedByDate", statsSortedByDate)
             lastUpdated = Date()
         } catch {
             print("Error getting stats from database: \(error)")
@@ -86,7 +94,6 @@ final class StatisticsManager: ObservableObject {
     func removeStatFromDatabase(stat: Stat) async {
         do {
             let stat: [Stat] = try await SupabaseDB.shared.delete(table: "Stats", filters: ["id": stat.id])
-            print("stat", stat)
         } catch {
             print("Error removing stat from database: \(error)")
         }
@@ -159,7 +166,7 @@ final class StatisticsManager: ObservableObject {
         }
     }
 
-    func getStatsPerDay(from stats: [Stat]) -> [(date: Date, stats: [Stat])] {
+    func getStatsPerDay(from stats: [Stat]) -> [StatSortedByDate] {
         let calendar = Calendar.current
 
         // 1. Group stats by startOfDay
@@ -167,16 +174,21 @@ final class StatisticsManager: ObservableObject {
             calendar.startOfDay(for: stat.createdAt ?? Date())
         }
 
-        // 2. Sort by date ascending
-        let sorted = grouped.keys.sorted().map { date in
-            (date: date, stats: grouped[date] ?? [])
+        // 2. Sort days by date descending (latest first)
+        let sorted = grouped.keys.sorted(by: >).map { date in
+            // Also sort each day's stats by createdAt descending
+            let dayStats = (grouped[date] ?? []).sorted {
+                ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast)
+            }
+            return StatSortedByDate(date: date, stats: dayStats)
         }
 
         return sorted
     }
 
-    func getCurrentStreak(from stats: [Stat]) -> [(date: Date, stats: [Stat])] {
+    func getCurrentStreak(from stats: [Stat]) -> [StatSortedByDate] {
         let statsPerDay = getStatsPerDay(from: stats)
+        print("statsPerDay", statsPerDay)
 
         // 3. Go from latest backwards, filter only days with ≥ 1h
         let filtered = statsPerDay
@@ -221,7 +233,7 @@ final class StatisticsManager: ObservableObject {
 
         if let last = lastUpdated {
             let timeSinceLastUpdate = now.timeIntervalSince(last)
-            guard timeSinceLastUpdate > 3600 else {
+            guard timeSinceLastUpdate > 5 else {
                 print("Skipping fetch — last updated less than 1 hour ago")
                 return
             }

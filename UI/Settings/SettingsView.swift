@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @StateObject private var controller: SettingsController
     @EnvironmentObject var router: Router
-
+    @EnvironmentObject var statsManager: StatisticsManager
     init(controller: SettingsController) {
         _controller = StateObject(wrappedValue: controller)
     }
@@ -34,6 +34,7 @@ struct SettingsView: View {
                     .background(.ultraThinMaterial)
 
                 SettingsContent(controller: controller)
+                    .environmentObject(statsManager)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(.regularMaterial)
             }

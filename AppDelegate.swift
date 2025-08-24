@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     var settingsController: SettingsController!
     var router: Router = .init()
     var hotkeyManager: HotkeyManager!
+    var statsManager: StatisticsManager!
     private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_: Notification) {
@@ -23,7 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         homeController = HomeController(router: router, appDelegate: self)
         hotkeyManager = HotkeyManager(homeController: homeController, appDelegate: self)
         settingsController = SettingsController(homeController: homeController, hotkeyManager: hotkeyManager)
-
+        statsManager = StatisticsManager.shared
         Task {
             await homeController.checkAuth()
             await settingsController.generalController.updateUserDefaults()
@@ -89,7 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                 .environmentObject(SupabaseAuth.shared)
                 .environmentObject(router)
                 .environmentObject(BlockerManager.shared)
-                .environmentObject(StatisticsManager.shared)
+                .environmentObject(statsManager)
                 .environment(\.font, .custom("Inter-Regular", size: 16))
         )
         return NSHostingController(rootView: root)
@@ -123,6 +124,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             rootView: SettingsView(controller: settingsController)
                 .environmentObject(SupabaseAuth.shared)
                 .environmentObject(router)
+                .environmentObject(statsManager)
                 .environment(\.font, .custom("Inter-Regular", size: 16))
                 .fixedSize() // 🔹 makes SwiftUI report natural size
         )

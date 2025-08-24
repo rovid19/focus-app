@@ -34,7 +34,7 @@ private struct TitleSection: View {
     @ObservedObject var controller: FocusController
 
     @State private var pulseOpacity: Double = 1.0
-    @State private var delayedTimerLimited: Bool = true
+    //@State private var delayedTimerLimited: Bool = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +45,7 @@ private struct TitleSection: View {
                 .padding(.bottom, 8)
                 .textCase(.uppercase)
 
-            if delayedTimerLimited || (!delayedTimerLimited && controller.isSessionRunning) {
+            if controller.showTime() {
                 Text("\(controller.homeController.blockerController.formattedTimeLeft(from: controller.timerMinutes))")
                     .font(.custom("Inter_18pt-Medium", size: 48))
                     .foregroundColor(.white)
@@ -58,7 +58,7 @@ private struct TitleSection: View {
                     .opacity(pulseOpacity)
             }
         }
-        .onAppear {
+       /* .onAppear {
             delayedTimerLimited = controller.isTimerLimited
         }
         .onChange(of: controller.isTimerLimited) { newValue in
@@ -72,7 +72,7 @@ private struct TitleSection: View {
                     pulseOpacity = 1.0
                 }
             }
-        }
+        }*/
     }
 }
 

@@ -8,11 +8,9 @@ class SocialMediaShareController: ObservableObject {
     init() {
         todaySummary = StatisticsManager.shared.generateSocialMediaSummary()
         todaySummary?.focusTime
-        print("summary", todaySummary)
     }
 
     func createTodaySummary() {
         showingSummaryPopup = true
-        print(todaySummary?.currentStreak, todaySummary?.currentStreak)
     }
 }

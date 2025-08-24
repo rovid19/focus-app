@@ -15,7 +15,13 @@ struct SessionSettingsSection: View {
                     unit: "minutes",
                     range: 5 ... 120,
                     onChange: { newValue in
-                        controller.settings.focusMinimalDuration = newValue
+                        if let homeController = controller.homeController,
+                           !(homeController.focusController.isSessionRunning)
+                        {
+                            controller.settings.focusMinimalDuration = newValue
+                        } else {
+                            print("cant change this while session is running")
+                        }
                     },
                     increment: 5
                 )
@@ -27,7 +33,13 @@ struct SessionSettingsSection: View {
                     unit: "hours",
                     range: 1 ... 12,
                     onChange: { newValue in
-                        controller.settings.blockerMinimalDuration = newValue
+                        if let homeController = controller.homeController,
+                           !(homeController.focusController.isSessionRunning)
+                        {
+                            controller.settings.blockerMinimalDuration = newValue
+                        } else {
+                            print("cant change this while session is running")
+                        }
                     },
                     increment: 1
                 )
@@ -38,9 +50,14 @@ struct SessionSettingsSection: View {
                     value: controller.settings.allowedTabsDuringBlocking,
                     range: 1 ... 3,
                     onChange: { newValue in
-                        controller.settings.allowedTabsDuringBlocking = newValue
-                    },
-                  
+                        if let homeController = controller.homeController,
+                           !(homeController.focusController.isSessionRunning)
+                        {
+                            controller.settings.allowedTabsDuringBlocking = newValue
+                        } else {
+                            print("cant change this while session is running")
+                        }
+                    }
                 )
             }
         }
