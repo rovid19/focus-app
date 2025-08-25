@@ -41,7 +41,8 @@ class GeneralSettingsController: ObservableObject {
         self.hotkeyManager = hotkeyManager
         self.homeController = homeController
     }
-
+    
+    @MainActor
     func changeHomeControllerValues() async {
         if let focusController = homeController?.focusController,
            !(focusController.isSessionRunning)

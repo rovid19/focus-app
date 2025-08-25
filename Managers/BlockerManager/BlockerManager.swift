@@ -5,17 +5,41 @@ struct BlockRow: Codable {
     let user_id: String
     let BlockedWebsites: [String]
     let BlockedApps: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case user_id
+        case BlockedWebsites = "blocked_websites"
+        case BlockedApps = "blocked_apps"
+    }
 }
 
+struct ScheduledBlockCodableRow: Codable {
+    let user_id: String
+    let scheduledBlocks: [ScheduledBlock]?
+
+    enum CodingKeys: String, CodingKey {
+        case user_id
+        case scheduledBlocks = "scheduled_blocks"
+    }
+}
+
+struct BlockerTableData: Codable {  
+    let user_id: String
+    let blocked_websites: [String]
+    let blocked_apps: [String]
+    let scheduled_blocks: [ScheduledBlock]?
+}
 
 
 class BlockerManager: ObservableObject {
     static let shared = BlockerManager()
     var blockedApps: [String] = ["com.apple.Safari"] // Example bundle ID
+    @Published var blockedAppsList: [BlockedApp] = []
     @Published var isRunning: Bool = false
     @Published var hardLocked: Bool = false
     @Published var remainingTime: Int = 3600
     @Published var blockedWebsites: [String] = []
+    var scheduledBlocks: [ScheduledBlock]? = []
     var resumeTimer: Bool = false
     private var monitorObserver: Any?
 
@@ -67,7 +91,7 @@ class BlockerManager: ObservableObject {
         )
 
         do {
-           try await SupabaseDB.shared.upsert(table: "Blocker", data: row)
+            try await SupabaseDB.shared.upsert(table: "Blocker", data: row)
             print("Blocked domains saved to database: \(blockedWebsites)")
             print("Blocked apps saved to database: \(blockedApps)")
         } catch {
@@ -152,4 +176,74 @@ class BlockerManager: ObservableObject {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8) ?? ""
     }
+
+    @MainActor
+    func addBlockToDatabase(_ newBlock: ScheduledBlock) async {
+        scheduledBlocks?.append(newBlock)
+        guard let user = SupabaseAuth.shared.user else {
+            print("No logged-in user")
+            return
+        }
+        let row = ScheduledBlockCodableRow(
+            user_id: user.id.uuidString,
+            scheduledBlocks: scheduledBlocks
+        )
+
+        do {
+            try await SupabaseDB.shared.upsert(table: "Blocker", data: row)
+        } catch {
+            print("Error saving scheduled blocks to database: \(error)")
+        }
+    }
+    
+    @MainActor
+    func getBlockerTable() async {
+        guard let user = SupabaseAuth.shared.user else {
+            print("No logged-in user")
+            return
+        }
+        do {    
+            let data: [BlockerTableData] = try await SupabaseDB.shared.select(table: "Blocker", filters: ["user_id": user.id.uuidString])
+            print("data", data)
+            blockedWebsites = data[0].blocked_websites
+            blockedApps = data[0].blocked_apps
+            blockedAppsList = blockedAppsFromBundleIDs(blockedApps)
+            scheduledBlocks = data[0].scheduled_blocks
+        } catch {
+            print("Error getting blocker table from database: \(error)")
+        }
+    }
+
+    func blockedAppsFromBundleIDs(_ bundleIDs: [String]) -> [BlockedApp] {
+    var result: [BlockedApp] = []
+    
+    for bundleID in bundleIDs {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID),
+           let bundle = Bundle(url: url) {
+            
+            let name = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+                ?? url.deletingPathExtension().lastPathComponent
+            
+            let icon = NSWorkspace.shared.icon(forFile: url.path)
+            
+            let app = BlockedApp(
+                name: name,
+                bundleIdentifier: bundleID,
+                iconPath: url.path
+            )
+            
+            result.append(app)
+        } else {
+            // fallback if app not found
+            let app = BlockedApp(
+                name: bundleID, // fallback
+                bundleIdentifier: bundleID,
+                iconPath: ""
+            )
+            result.append(app)
+        }
+    }
+    
+    return result
+}
 }

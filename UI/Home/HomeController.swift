@@ -9,6 +9,7 @@ class HomeController: ObservableObject {
     @Published var changePadding: Bool = false
     @Published var whichView: String = "focus"
     @Published var showFinishSessionDialog: Bool = false
+    @Published var secondsToSend: Int = 0
     @ObservedObject var router: Router
     // @ObservedObject var blockerManager: BlockerManager
 

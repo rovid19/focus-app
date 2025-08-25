@@ -122,8 +122,9 @@ struct FinishSessionDialog: View {
         }
     }
 
-    private func addStatToDatabase() async {
-        let secondsToSend = controller.calculateTimeElapsed(seconds: controller.timerMinutes)
+     func addStatToDatabase() async {
+        let secondsToSend = controller.homeController.secondsToSend
+        print("secondsToSend: \(secondsToSend)")
         do {
             try await StatisticsManager.shared.addStat(title: title.isEmpty ? "Focus Session" : title, time_elapsed: secondsToSend, description: description)
             startExitAnimation()

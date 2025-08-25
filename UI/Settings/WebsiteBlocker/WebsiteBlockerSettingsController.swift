@@ -1,22 +1,27 @@
 import SwiftUI
 
 class WebsiteBlockerSettingsController: ObservableObject {
-    @Published var blockedWebsites: [String] = ["youtube.com", "twitter.com", "reddit.com", "facebook.com", "instagram.com"]
     @Published var newWebsite: String = ""
-    
+
     func addWebsite(_ website: String) {
         let cleanWebsite = cleanDomain(website)
-        if !cleanWebsite.isEmpty && !blockedWebsites.contains(cleanWebsite) {
-            blockedWebsites.append(cleanWebsite)
+        if !cleanWebsite.isEmpty && !BlockerManager.shared.blockedWebsites.contains(cleanWebsite) {
+            BlockerManager.shared.blockedWebsites.append(cleanWebsite)
             newWebsite = ""
         }
-        print("blockedWebsites: \(blockedWebsites)")
-        saveBlockedWebsitesToWebsiteBlocker()
+        print("blockedWebsites: \(BlockerManager.shared.blockedWebsites)")
+         Task {
+            await BlockerManager.shared.saveBlockToDatabase()
+        }
     }
     
     func removeWebsite(_ website: String) {
-        blockedWebsites.removeAll { $0 == website }
-        saveBlockedWebsitesToWebsiteBlocker()
+        print("removing website: \(BlockerManager.shared.blockedWebsites)")
+        BlockerManager.shared.blockedWebsites.removeAll { $0 == website }
+        print("blockedWebsites: \(BlockerManager.shared.blockedWebsites)")
+         Task {
+            await BlockerManager.shared.saveBlockToDatabase()
+        }
     }
     
     private func cleanDomain(_ input: String) -> String {
@@ -37,10 +42,5 @@ class WebsiteBlockerSettingsController: ObservableObject {
         return domain
     }
 
-    private func saveBlockedWebsitesToWebsiteBlocker() {
-        BlockerManager.shared.blockedWebsites = blockedWebsites
-        Task {
-            await BlockerManager.shared.saveBlockToDatabase()
-        }
-    }
+ 
 }

@@ -7,17 +7,28 @@ struct AppBlockerSettingsView: View {
         ScrollView {
             VStack(spacing: 24) {
                 AddAppSection(controller: controller)
-                BlockedAppsListHeader(controller: controller)
-                
-                if controller.blockedApps.isEmpty {
-                    EmptyAppsStateView()
-                } else {
-                    BlockedAppsList(controller: controller)
-                }
+                BlockedAppsSection(controller: controller)
+                ScheduleBlock()
             }
             .padding(24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct BlockedAppsSection: View {
+    @ObservedObject var controller: AppBlockerSettingsController
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            BlockedAppsListHeader(controller: controller)
+            
+            if BlockerManager.shared.blockedAppsList.isEmpty {
+                EmptyAppsStateView()
+            } else {
+                BlockedAppsList(controller:controller)
+            }
+        }
     }
 }
 
@@ -36,14 +47,7 @@ struct AddAppSection: View {
                 .foregroundColor(.white.opacity(0.6))
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
+        .settingsBackground()
     }
 }
 
@@ -71,14 +75,7 @@ struct AppPickerButton: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-            )
+            .settingsButton()
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -97,7 +94,7 @@ struct BlockedAppsListHeader: View {
             
             Spacer()
             
-            Text("\(controller.blockedApps.count) total")
+            Text("\(BlockerManager.shared.blockedAppsList.count) total")
                 .font(.custom("Inter-Regular", size: 12))
                 .foregroundColor(.white.opacity(0.6))
         }
@@ -132,27 +129,21 @@ struct EmptyAppsStateView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
+        .settingsBackground()
     }
 }
 
 // MARK: - Apps List
 struct BlockedAppsList: View {
     @ObservedObject var controller: AppBlockerSettingsController
+    @ObservedObject var blockerManager: BlockerManager = BlockerManager.shared
     
     var body: some View {
         VStack(spacing: 10) {
-            ForEach(controller.blockedApps.sorted(by: { $0.name < $1.name })) { app in
+            ForEach(blockerManager.blockedAppsList.sorted(by: { $0.name < $1.name })) { app in
                 AppListItem(
                     app: app,
-                    onRemove: { controller.removeApp(app) }
+                    onRemove: { controller.removeApp(app:app) }
                 )
             }
         }
@@ -171,14 +162,7 @@ struct AppListItem: View {
             RemoveAppButton(onRemove: onRemove)
         }
         .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
+        .settingsBackground()
     }
 }
 
@@ -236,14 +220,7 @@ struct AppStatusBadge: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
-        .background(
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
+        .settingsBackground(opacity: 0)
     }
 }
 
@@ -263,14 +240,7 @@ struct RemoveAppButton: View {
             .foregroundColor(.white.opacity(0.8))
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.white.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-            )
+            .settingsButton(opacity: 0)
         }
         .buttonStyle(PlainButtonStyle())
     }

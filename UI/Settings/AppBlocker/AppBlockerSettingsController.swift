@@ -1,25 +1,35 @@
 import SwiftUI
 import AppKit
 
+// in this file i used two lists - blockedAppsList and blockedApps
+// blockedAppsList is used to display the list of blocked apps in the UI
+// blockedApps is used to save the list of blocked apps to the database
+// i did this because i need to display the icons of the blocked apps in the UI
+// and i need to save the list of blocked apps to the database as a string array
+// so i created two lists, one with the blocked apps and one with the blocked apps and their icons
+
 class AppBlockerSettingsController: ObservableObject {
-    @Published var blockedApps: [BlockedApp] = [
-        BlockedApp(name: "Safari", bundleIdentifier: "com.apple.Safari", iconPath: "/System/Applications/Safari.app"),
-        BlockedApp(name: "Chrome", bundleIdentifier: "com.google.Chrome", iconPath: "/Applications/Google Chrome.app"),
-        BlockedApp(name: "Discord", bundleIdentifier: "com.hnc.Discord", iconPath: "/Applications/Discord.app")
-    ]
     
-    func addApp(_ app: BlockedApp) {
-        if !blockedApps.contains(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
-            blockedApps.append(app)
-            saveSettings()
+    func addApp(app: BlockedApp) {
+        if !BlockerManager.shared.blockedAppsList.contains(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+            // koristim blockedAppsList i blockedApps - zato jer trebam slikice na listi blokanih appsa
+            // ali vec imam implemntaciju za string array na blocker manageru za blokiranje appsa, pa sad radim
+            // špagetu od koga i dodajem zapravo dvije iste liste, jedna ima samo bundle identifiere, a druga
+            // ima slike i nazive appsa za ljepsi prikaz
+            BlockerManager.shared.blockedAppsList.append(app)
+            BlockerManager.shared.blockedApps = BlockerManager.shared.blockedAppsList.map { $0.bundleIdentifier }
         }   
-        saveBlockedAppsToDatabase()
+        Task {
+            await BlockerManager.shared.saveBlockToDatabase()
+        }
     }
     
-    func removeApp(_ app: BlockedApp) {
-        blockedApps.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
-        saveSettings()
-        saveBlockedAppsToDatabase()
+    func removeApp(app: BlockedApp) {
+        BlockerManager.shared.blockedAppsList.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
+        BlockerManager.shared.blockedApps = BlockerManager.shared.blockedAppsList.map { $0.bundleIdentifier }
+        Task {
+            await BlockerManager.shared.saveBlockToDatabase()
+        }
     }
     
     func openApplicationsPicker() {
@@ -34,7 +44,7 @@ class AppBlockerSettingsController: ObservableObject {
         if panel.runModal() == .OK {
             if let url = panel.url {
                 let app = createBlockedApp(from: url)
-                addApp(app)
+                addApp(app: app)
             }
         }
     }
@@ -53,21 +63,14 @@ class AppBlockerSettingsController: ObservableObject {
             iconPath: url.path
         )
     }
-    
-    private func loadSettings() {
-        // Load from UserDefaults or other persistence
-    }
-    
-    private func saveSettings() {
-        // Save to UserDefaults or other persistence
-    }
 
-    private func saveBlockedAppsToDatabase() {
+
+   /* private func saveBlockedAppsToDatabase() {
         BlockerManager.shared.blockedApps = blockedApps.map { $0.bundleIdentifier }
         Task {
             await BlockerManager.shared.saveBlockToDatabase()
         }
-    }
+    }*/
 }
 
 struct BlockedApp: Identifiable, Hashable {

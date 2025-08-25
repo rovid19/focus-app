@@ -6,6 +6,14 @@ class BlockerController: ObservableObject {
     @Published var selectedHours: Int = 1
 
     var timer: Timer?
+    var scheduleTimer: Timer?
+
+    init() {
+        startScheduledBlock()
+        if !BlockerManager.shared.isRunning {
+            startScheduleListener()
+        }
+    }
 
     // Derived
     var totalSeconds: Int {
@@ -67,5 +75,30 @@ class BlockerController: ObservableObject {
         AppStateManager.shared.saveBlockerState(BlockerState(remainingTime: BlockerManager.shared.remainingTime, isRunning: BlockerManager.shared.isRunning, hardLocked: BlockerManager.shared.hardLocked))
     }
 
+    func startScheduledBlock() {
+        guard let scheduledBlocks = BlockerManager.shared.scheduledBlocks else {return}
+        let currentTime = Date()
 
+        let tolerance: TimeInterval = 120 // 2 minutes in seconds
+
+        for block in scheduledBlocks {
+            let startWindow = block.starts.addingTimeInterval(-tolerance)
+            let endWindow = block.starts.addingTimeInterval(tolerance)
+
+            // If we are within 2 minutes before/after start, and before block end
+            if currentTime >= startWindow, currentTime <= endWindow, currentTime <= block.ends {
+                BlockerManager.shared.remainingTime = block.blockDuration
+                toggleBlocker()
+            }
+        }
+    }
+
+    func startScheduleListener() {
+        // Invalidate existing one if already running
+        scheduleTimer?.invalidate()
+
+        scheduleTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.startScheduledBlock()
+        }
+    }
 }

@@ -9,7 +9,7 @@ struct WebsiteBlockerSettingsView: View {
                 AddWebsiteSection(controller: controller)
                 BlockedListHeader(controller: controller)
                 
-                if controller.blockedWebsites.isEmpty {
+                if BlockerManager.shared.blockedWebsites.isEmpty {
                     EmptyStateView()
                 } else {
                     WebsiteList(controller: controller)
@@ -121,7 +121,7 @@ struct BlockedListHeader: View {
             
             Spacer()
             
-            Text("\(controller.blockedWebsites.count) total")
+            Text("\(BlockerManager.shared.blockedWebsites.count) total")
                 .font(.custom("Inter-Regular", size: 12))
                 .foregroundColor(.white.opacity(0.6))
         }
@@ -170,10 +170,11 @@ struct EmptyStateView: View {
 // MARK: - Website List
 struct WebsiteList: View {
     @ObservedObject var controller: WebsiteBlockerSettingsController
+    @ObservedObject var blockerManager: BlockerManager = BlockerManager.shared
     
     var body: some View {
         VStack(spacing: 10) {
-            ForEach(controller.blockedWebsites.sorted(), id: \.self) { website in
+            ForEach(blockerManager.blockedWebsites.sorted(), id: \.self) { website in
                 WebsiteListItem(
                     website: website,
                     onRemove: { controller.removeWebsite(website) }

@@ -114,6 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
             Task {
                 await StatisticsManager.shared.getStatsFromDatabaseIfNeeded()
+                await BlockerManager.shared.getBlockerTable()
             }
         }
     }
@@ -258,6 +259,7 @@ extension AppDelegate: NSWindowDelegate {
            window == settingsWindow {
             Task { @MainActor in
                 await StatisticsManager.shared.getStatsFromDatabaseIfNeeded()
+                await BlockerManager.shared.getBlockerTable()
             }
         }
     }

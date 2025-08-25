@@ -86,7 +86,7 @@ final class StatisticsManager: ObservableObject {
             totalHours = formatSecondsToHoursAndMinutes(totalSeconds)
             populateHoursPerDay()
             statsSortedByDate = getStatsPerDay(from: stats)
-            print("statsSortedByDate", statsSortedByDate)
+            //print("statsSortedByDate", statsSortedByDate)
             lastUpdated = Date()
         } catch {
             print("Error getting stats from database: \(error)")

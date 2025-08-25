@@ -55,7 +55,8 @@ class FocusController: ObservableObject {
             }
             .store(in: &cancellables)
     }
-
+    
+    @MainActor
     private func onInitialMinutesChanged() {
         if isSessionRunning { return }
         print("onInitialMinutesChanged", initialTimerMinutes)
@@ -197,7 +198,8 @@ class FocusController: ObservableObject {
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
-        showFinishSessionDialog()
+        let secondsToSend = calculateTimeElapsed(seconds: timerMinutes)
+        showFinishSessionDialog(secondsToSend: secondsToSend)
 
         AppStateManager.shared.saveFocusState(FocusSessionState(
             timerMinutes: timerMinutes,
@@ -214,7 +216,7 @@ class FocusController: ObservableObject {
         }
     }
 
-     func calculateTimeElapsed(seconds _: Int) -> Int {
+    func calculateTimeElapsed(seconds _: Int) -> Int {
         if initialTimerMinutes > timerMinutes && timerMinutes > 0 {
             return initialTimerMinutes - timerMinutes
         } else {
@@ -250,16 +252,8 @@ class FocusController: ObservableObject {
         await startTimer()
     }
 
-    /* func addStatToDatabase(title: String, time_elapsed: Int) async {
-         if time_elapsed < 900 {
-             print("time_elapsed is less than 15minutes  skipping stat")
-             return
-         }
-         print("addStatToDatabase", title, time_elapsed)
-         await StatisticsManager.shared.addStat(title: title, time_elapsed: time_elapsed)
-     } */
-
-    func showFinishSessionDialog() {
+    func showFinishSessionDialog(secondsToSend: Int) {
+        homeController.secondsToSend = secondsToSend
         homeController.showFinishSessionDialog = true
     }
 }
