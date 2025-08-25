@@ -4,6 +4,7 @@ struct Stat: Codable, Identifiable, Equatable {
     let id: Int?
     let title: String
     let time_elapsed: Int
+    let description: String?
     let userId: UUID
     let createdAt: Date?
 
@@ -11,6 +12,7 @@ struct Stat: Codable, Identifiable, Equatable {
         case id
         case title
         case time_elapsed
+        case description
         case userId = "user_id"
         case createdAt = "created_at"
     }
@@ -51,13 +53,13 @@ final class StatisticsManager: ObservableObject {
 
     private(set) var userId: UUID?
 
-    func addStat(title: String, time_elapsed: Int) async {
+    func addStat(title: String, time_elapsed: Int, description: String) async {
         guard let uid = userId else {
             print("❌ Cannot add stat — no user logged in")
             return
         }
 
-        let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, userId: uid, createdAt: nil)
+        let stat = Stat(id: nil, title: title, time_elapsed: time_elapsed, description: description, userId: uid, createdAt: nil)
         stats.append(stat)
         await addStatToDatabase(stat: stat)
     }

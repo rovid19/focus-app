@@ -8,7 +8,7 @@ class HomeController: ObservableObject {
     @Published var rebuildID = UUID()
     @Published var changePadding: Bool = false
     @Published var whichView: String = "focus"
-
+    @Published var showFinishSessionDialog: Bool = false
     @ObservedObject var router: Router
     // @ObservedObject var blockerManager: BlockerManager
 

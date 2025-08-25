@@ -180,14 +180,18 @@ private extension HomeView {
 
     // Switch between Focus / Stats (type-erased to avoid compiler blow-up)
     var contentArea: AnyView {
+        if controller.showFinishSessionDialog {
+            return AnyView(FinishSessionDialog(controller: controller.focusController))
+        } else {
         if controller.whichView == "focus" {
             return AnyView(controller.focusView)
         } else if controller.whichView == "stats" {
             return AnyView(controller.statsView)
         } else if controller.whichView == "blocker" {
             return AnyView(controller.blockerView)
-        } else {
-            return AnyView(EmptyView())
+            } else {
+                return AnyView(EmptyView())
+            }
         }
     }
 

@@ -197,16 +197,7 @@ class FocusController: ObservableObject {
         stopTimer()
         homeController.isTimerRunning = false
         isSessionRunning = false
-        let secondsToSend = calculateTimeElapsed(seconds: timerMinutes)
-        await addStatToDatabase(title: "Focus", time_elapsed: secondsToSend)
-
-        // Animate the reset by gradually changing the timer value
-        if isTimerLimited {
-            animateTimerReset()
-        } else {
-            timerMinutes = 0
-            initialTimerMinutes = 0
-        }
+        showFinishSessionDialog()
 
         AppStateManager.shared.saveFocusState(FocusSessionState(
             timerMinutes: timerMinutes,
@@ -214,9 +205,16 @@ class FocusController: ObservableObject {
             isHardMode: isHardMode,
             initialTimerMinutes: initialTimerMinutes
         ))
+
+        if isTimerLimited {
+            animateTimerReset()
+        } else {
+            timerMinutes = 0
+            initialTimerMinutes = 0
+        }
     }
 
-    private func calculateTimeElapsed(seconds _: Int) -> Int {
+     func calculateTimeElapsed(seconds _: Int) -> Int {
         if initialTimerMinutes > timerMinutes && timerMinutes > 0 {
             return initialTimerMinutes - timerMinutes
         } else {
@@ -252,12 +250,16 @@ class FocusController: ObservableObject {
         await startTimer()
     }
 
-    func addStatToDatabase(title: String, time_elapsed: Int) async {
-        if time_elapsed < 900 {
-            print("time_elapsed is less than 15minutes  skipping stat")
-            return
-        }
-        print("addStatToDatabase", title, time_elapsed)
-        await StatisticsManager.shared.addStat(title: title, time_elapsed: time_elapsed)
+    /* func addStatToDatabase(title: String, time_elapsed: Int) async {
+         if time_elapsed < 900 {
+             print("time_elapsed is less than 15minutes  skipping stat")
+             return
+         }
+         print("addStatToDatabase", title, time_elapsed)
+         await StatisticsManager.shared.addStat(title: title, time_elapsed: time_elapsed)
+     } */
+
+    func showFinishSessionDialog() {
+        homeController.showFinishSessionDialog = true
     }
 }
